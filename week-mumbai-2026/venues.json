@@ -1,0 +1,95 @@
+{
+  "pulled": "2026-10-21",
+  "venues": [
+    {
+      "id": "fairmont-mumbai",
+      "name": "Fairmont Mumbai",
+      "address": "T2 C06, CTS No 1405 (Part), Chhatrapati Shivaji Maharaj International Airport Terminal 2, Mumbai 400099",
+      "area": "Airport T2",
+      "place_id": "ChIJZ1eluQbJ5zsRVTTiDls0wgg",
+      "map_url": "https://www.google.com/maps/search/?api=1&query=Fairmont%20Mumbai&query_place_id=ChIJZ1eluQbJ5zsRVTTiDls0wgg",
+      "used_for": [
+        "IBW Conference",
+        "IBW Institutional Forum",
+        "IBW Future Asset Forum"
+      ],
+      "dates": "2026-11-01 to 2026-11-02"
+    },
+    {
+      "id": "jio-world-centre",
+      "name": "Jio World Centre",
+      "address": "G Block, Bandra Kurla Complex, Bandra East, Mumbai, Maharashtra 400051",
+      "area": "BKC",
+      "place_id": "ChIJeye6UizJ5zsR44eVF_eDOG0",
+      "map_url": "https://www.google.com/maps/search/?api=1&query=Jio%20World%20Centre%20BKC&query_place_id=ChIJeye6UizJ5zsR44eVF_eDOG0",
+      "used_for": [
+        "Devcon 8",
+        "ETHIndia Conference",
+        "Devcon Career Fair"
+      ],
+      "dates": "2026-11-03 to 2026-11-06",
+      "note": "Ticket page pin. PIN 400051."
+    },
+    {
+      "id": "jio-world-convention-centre",
+      "name": "Jio World Convention Centre",
+      "address": "Jio World Centre, G Block, Bandra Kurla Complex, Bandra East, Mumbai",
+      "area": "BKC",
+      "place_id": "ChIJZ2FW5RzJ5zsRfoq2-gbbmzk",
+      "map_url": "https://www.google.com/maps/search/?api=1&query=Jio%20World%20Convention%20Centre&query_place_id=ChIJZ2FW5RzJ5zsRfoq2-gbbmzk",
+      "used_for": [
+        "ETHGlobal Mumbai",
+        "on-site hubs"
+      ],
+      "dates": "2026-11-05 to 2026-11-07",
+      "note": "Same complex as Jio World Centre. This pin is listed as 400098. A Devcon badge does not admit ETHGlobal."
+    },
+    {
+      "id": "grand-hyatt-mumbai",
+      "name": "Grand Hyatt Mumbai Hotel & Residences",
+      "address": "Bandra Kurla Complex, Siddharath Nagar, Vakola, Mumbai, Maharashtra 400055",
+      "area": "BKC / Vakola",
+      "place_id": "ChIJicI_AALJ5zsRrMFrgB6LMEA",
+      "map_url": "https://www.google.com/maps/search/?api=1&query=Grand%20Hyatt%20Mumbai&query_place_id=ChIJicI_AALJ5zsRrMFrgB6LMEA",
+      "used_for": [
+        "Pragma Mumbai"
+      ],
+      "dates": "2026-11-06",
+      "note": "Different building from Jio. Pin and time come from the IBW Luma entry that links to ethglobal.com. Other directories still say 5 Nov or Jio."
+    },
+    {
+      "id": "courtyard-marriott-airport",
+      "name": "Courtyard by Marriott Mumbai International Airport",
+      "address": "CTS 215, Andheri–Kurla Road, Andheri East, Mumbai",
+      "area": "Airport / Andheri East",
+      "place_id": "ChIJ66xaCzrI5zsRIKrLqvww33Y",
+      "map_url": "https://www.google.com/maps/search/?api=1&query=Courtyard%20by%20Marriott%20Mumbai%20Airport&query_place_id=ChIJ66xaCzrI5zsRIKrLqvww33Y",
+      "used_for": [
+        "DeFi Security Summit 2026",
+        "Unchained Summit India"
+      ]
+    },
+    {
+      "id": "yashwantrao-chavan-centre",
+      "name": "Yashwantrao Chavan Centre",
+      "area": "Nariman Point",
+      "place_id": "ChIJd74E9enR5zsRaPX_EAepD3M",
+      "map_url": "https://www.google.com/maps/search/?api=1&query=Yashwantrao%20Chavan%20Centre&query_place_id=ChIJd74E9enR5zsRaPX_EAepD3M",
+      "used_for": [
+        "Ethereum Cypherpunk Congress #3"
+      ],
+      "note": "South Mumbai. Not BKC."
+    },
+    {
+      "id": "mca-recreation-centre",
+      "name": "Mumbai Cricket Association Recreation Centre",
+      "address": "G Block, RG-2, Bandra Kurla Complex, Bandra East, Mumbai 400051",
+      "area": "BKC",
+      "place_id": "ChIJCxRu1enI5zsRrySktZU1hw0",
+      "map_url": "https://www.google.com/maps/search/?api=1&query=Mumbai%20Cricket%20Association%20Recreation%20Centre&query_place_id=ChIJCxRu1enI5zsRrySktZU1hw0",
+      "used_for": [
+        "Ethereum Forward Defence Summit"
+      ]
+    }
+  ]
+}

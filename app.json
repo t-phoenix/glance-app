@@ -1,0 +1,46 @@
+{
+  "expo": {
+    "name": "Glance",
+    "slug": "recall",
+    "scheme": "recall",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "bundleIdentifier": "xyz.abhinil.recall",
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Glance uses the camera to scan QR codes and photograph badges.",
+        "NSMicrophoneUsageDescription": "Glance uses the microphone for your own voice notes. It does not record the other person.",
+        "NSLocationWhenInUseUsageDescription": "Glance reads your location once per meeting to match the event.",
+        "NSFaceIDUsageDescription": "Glance locks your notes and wallet with Face ID.",
+        "UIBackgroundModes": ["audio"],
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "plugins": [
+      "expo-router",
+      "expo-sqlite",
+      "expo-secure-store",
+      "expo-audio",
+      "expo-font",
+      "expo-sharing",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Glance uses the camera to scan QR codes and photograph badges."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Glance reads your location once per meeting to match the event."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": false
+    }
+  }
+}

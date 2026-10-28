@@ -1,0 +1,292 @@
+<title>Recall Brand Board</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=JetBrains+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: dark-first board; sticky accent switch at top; sections stack; specimen grids wrap; two hi-fi phones side by side */
+:root{
+  --bg:#0B0E13; --s1:#12161D; --s2:#1A2029; --press:#252D38; --border:#33404F; --input:#64748A;
+  --text:#E9EDF2; --text2:#A9B5C4; --text3:#8796A8;
+  --blue:#5B8CFF; --blue-tint:#15213D; --pink:#F25C9B; --pink-tint:#3A1527;
+  --onaccent:#0B0E13;
+  --linked:#3DD68C; --linkedtint:#0F2A1D;
+  --pending:#8C9AB3; --pendingtint:#1E2533;
+  --warn:#FF8A73; --warntint:#3A1D16;
+  --danger:#F2555A; --dangertint:#3A1416;
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --text-f:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){
+  --bg:#F4F6F8; --s1:#FFFFFF; --s2:#FFFFFF; --press:#DCE1E7; --border:#DCE1E7; --input:#8593A3;
+  --text:#121820; --text2:#4A5868; --text3:#5F6C7B;
+  --blue:#2F5FD0; --blue-tint:#E3EBFC; --pink:#C2266B; --pink-tint:#FBE2EE; --onaccent:#FFFFFF;
+  --linked:#117446; --linkedtint:#DDF2E6; --pending:#56637A; --pendingtint:#E6EAF0;
+  --warn:#B8432B; --warntint:#FCE6E0; --danger:#C42B3A; --dangertint:#FBE1E3; color-scheme:light}}
+:root[data-theme="light"]{
+  --bg:#F4F6F8; --s1:#FFFFFF; --s2:#FFFFFF; --press:#DCE1E7; --border:#DCE1E7; --input:#8593A3;
+  --text:#121820; --text2:#4A5868; --text3:#5F6C7B;
+  --blue:#2F5FD0; --blue-tint:#E3EBFC; --pink:#C2266B; --pink-tint:#FBE2EE; --onaccent:#FFFFFF;
+  --linked:#117446; --linkedtint:#DDF2E6; --pending:#56637A; --pendingtint:#E6EAF0;
+  --warn:#B8432B; --warntint:#FCE6E0; --danger:#C42B3A; --dangertint:#FBE1E3; color-scheme:light}
+body{background:var(--bg);color:var(--text);font:15px/1.55 var(--text-f);--action:var(--blue);--actiontint:var(--blue-tint)}
+body.accent-pink{--action:var(--pink);--actiontint:var(--pink-tint)}
+.wrap{max-width:1120px;margin:0 auto;padding-block:24px 96px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;line-height:1.1}
+h2{font-size:1.75rem;font-weight:700;margin-top:72px}
+h2 + p{color:var(--text2);max-width:640px;margin:8px 0 24px}
+.cap{font:600 11px/1 var(--text-f);letter-spacing:.08em;text-transform:uppercase;color:var(--text3)}
+.mono{font-family:var(--mono)}
+.switch{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:12px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;border-bottom:1px solid var(--border)}
+.switch button{font:600 13px var(--text-f);height:40px;padding:0 14px;border-radius:999px;border:1.5px solid var(--border);background:var(--s1);color:var(--text);display:inline-flex;align-items:center;gap:8px;cursor:pointer}
+.switch button[aria-pressed="true"]{border-color:var(--action);color:var(--action)}
+.switch button:focus-visible{outline:2px solid var(--action);outline-offset:2px}
+.dot{width:12px;height:12px;border-radius:50%;flex:none}
+.hero{display:grid;grid-template-columns:auto 1fr;gap:28px;align-items:center;margin-top:40px}
+.hero h1{font-size:clamp(3rem,9vw,5.5rem);font-weight:800;letter-spacing:-.03em}
+.hero p{font-size:1.15rem;color:var(--text2);max-width:560px;margin:10px 0 0}
+@media (max-width:560px){.hero{grid-template-columns:1fr}}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+.sw{border-radius:16px;overflow:hidden;background:var(--s1);border:1px solid var(--border)}
+.sw .chip-c{height:96px;display:flex;align-items:flex-end;padding:10px 12px;font:600 12px var(--mono)}
+.sw .meta{padding:12px;display:flex;flex-direction:column;gap:2px}
+.sw .meta b{font-family:var(--display);font-size:1.05rem}
+.sw .meta span{font-size:13px;color:var(--text2)}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.panel{background:var(--s1);border:1px solid var(--border);border-radius:20px;padding:24px;display:flex;flex-direction:column;gap:18px;min-width:0}
+.two{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.btn{font:600 16px var(--text-f);border-radius:14px;height:56px;padding:0 22px;display:inline-flex;align-items:center;gap:8px;border:1px solid transparent;cursor:pointer}
+.btn:focus-visible{outline:2px solid var(--action);outline-offset:3px}
+.b-pri{background:var(--action);color:var(--onaccent)}
+.b-sec{background:var(--s2);color:var(--text);border-color:var(--border);height:48px}
+.b-ghost{background:none;color:var(--action);height:44px;padding:0 8px}
+.b-dan{background:var(--dangertint);color:var(--danger);height:48px}
+.chip{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:999px;font:500 13px var(--text-f);border:1.5px solid transparent;white-space:nowrap}
+.c-linked{background:var(--linkedtint);color:var(--linked)}
+.c-high{border-color:var(--linked);color:var(--linked)}
+.c-med{border-color:var(--text2);color:var(--text)}
+.c-low{border:1.5px dashed var(--text3);color:var(--text2)}
+.c-rej{color:var(--danger);text-decoration:line-through}
+.c-pend{background:var(--pendingtint);color:var(--pending)}
+.c-conf{background:var(--warntint);color:var(--warn)}
+.c-sel{background:var(--actiontint);color:var(--action)}
+.ico{width:14px;height:14px;flex:none}
+.banner{display:flex;align-items:center;gap:10px;height:40px;padding:0 14px;border-radius:10px;font-size:13px}
+.bn-off{background:var(--pendingtint);color:var(--text)}
+.bn-off svg{color:var(--pending)}
+.bn-bud{background:var(--warntint);color:var(--warn)}
+.bn-err{background:var(--dangertint);color:var(--danger)}
+.banner .act{margin-left:auto;font-weight:600}
+.toast{display:flex;align-items:center;gap:10px;background:var(--s2);border:1px solid var(--border);border-radius:14px;height:48px;padding:0 14px;font-size:14px;box-shadow:0 8px 24px rgb(0 0 0 / .25)}
+.toast .h{font-family:var(--mono);font-size:13px}
+.type-row{display:grid;grid-template-columns:140px 1fr;gap:16px;align-items:baseline;border-top:1px solid var(--border);padding-top:14px}
+@media (max-width:520px){.type-row{grid-template-columns:1fr;gap:4px}}
+.appicon{width:120px;height:120px;border-radius:27px;background:#0B0E13;display:grid;place-items:center;box-shadow:0 0 0 1px #33404F inset}
+.logo-lg{width:96px;height:96px}
+.m-badge{fill:#E9EDF2}
+.m-dot{fill:var(--action)}
+.phones{display:flex;flex-wrap:wrap;gap:28px;justify-content:center}
+.ph{width:300px;max-width:100%;height:620px;border-radius:44px;background:var(--bg);box-shadow:0 0 0 10px #05070A,0 0 0 11px var(--border),0 30px 60px rgb(0 0 0 / .35);padding:14px 16px 0;display:flex;flex-direction:column;gap:12px;overflow:hidden;position:relative;font-size:13px}
+.sb{display:flex;justify-content:space-between;font:600 12px var(--text-f);padding:2px 10px}
+.ph h3{font-size:30px;font-weight:700}
+.evc{background:var(--s1);border-radius:18px;padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+.evc b{font-family:var(--display);font-size:18px}
+.evc small{color:var(--text3);font-size:11px}
+.prow{display:flex;gap:10px;align-items:center;min-height:52px}
+.av{width:40px;height:40px;border-radius:50%;flex:none;display:grid;place-items:center;font:700 14px var(--display);color:var(--text);background:var(--press)}
+.av.ring{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--linked)}
+.pcol{display:flex;flex-direction:column;min-width:0;flex:1}
+.pcol b{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pcol span{color:var(--text2);font-size:12px}
+.star{color:var(--action);font-size:16px}
+.tabbar{margin-top:auto;margin-inline:-16px;height:84px;background:var(--s1);border-top:1px solid var(--border);display:flex;justify-content:space-around;align-items:flex-start;padding-top:8px;font-size:10px;color:var(--text3)}
+.tabbar .on{color:var(--action)}
+.tabbar span{display:flex;flex-direction:column;align-items:center;gap:3px;width:52px}
+.scanbtn{width:60px;height:60px;border-radius:50%;background:var(--action);color:var(--onaccent);box-shadow:0 0 0 4px var(--s1);display:grid;place-items:center;margin-top:-22px}
+.cand{background:var(--s1);border-radius:16px;padding:10px 12px;display:flex;gap:10px;align-items:center}
+.cand .ev{font-size:11px}
+.pick{height:32px;padding:0 12px;border-radius:10px;border:1px solid var(--border);background:var(--s2);color:var(--text);font:600 12px var(--text-f);flex:none}
+.sticky{margin-top:auto;margin-inline:-16px;padding:12px 16px 30px;background:var(--s1);border-top:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sticky .btn{height:48px;justify-content:center;font-size:14px;padding:0}
+.wallet{background:var(--s1);border:1px solid var(--border);border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:14px;max-width:360px}
+.bal{font:600 34px/1 var(--mono);font-variant-numeric:tabular-nums}
+.bar{height:8px;border-radius:999px;background:var(--press);overflow:hidden}
+.bar i{display:block;height:100%;width:19%;background:var(--action)}
+.kv{display:flex;justify-content:space-between;gap:12px;font-size:13px;color:var(--text2)}
+.kv b{color:var(--text);font-weight:500}
+.dont{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.dont div{border-radius:14px;padding:14px;background:var(--s1);border:1px solid var(--border);font-size:14px}
+.dont .y{border-color:var(--linked)} .dont .n{border-color:var(--danger)}
+.dont .lbl{font:600 11px var(--text-f);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+.dont .y .lbl{color:var(--linked)} .dont .n .lbl{color:var(--danger)}
+.only-blue,.only-pink{display:contents}
+body:not(.accent-pink) .only-pink, body.accent-pink .only-blue{display:none}
+@media (prefers-reduced-motion:no-preference){.btn,.switch button{transition:filter .15s,border-color .15s}.btn:hover{filter:brightness(1.06)}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="mark" viewBox="0 0 96 96">
+    <path class="m-badge" d="M24 14h48a12 12 0 0 1 12 12v50a12 12 0 0 1-12 12H24a12 12 0 0 1-12-12V26a12 12 0 0 1 12-12zm14 8a4 4 0 0 0 0 8h20a4 4 0 0 0 0-8z" fill-rule="evenodd"/>
+    <circle class="m-dot" cx="66" cy="70" r="9"/>
+  </symbol>
+  <symbol id="i-check" viewBox="0 0 16 16"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-link" viewBox="0 0 16 16"><path d="M6.5 9.5l3-3M7 4.5l1-1a2.8 2.8 0 0 1 4 4l-1 1M9 11.5l-1 1a2.8 2.8 0 0 1-4-4l1-1" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+  <symbol id="i-q" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6.3 6.3a1.8 1.8 0 1 1 2.4 1.7c-.5.2-.7.6-.7 1V10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="12" r=".9" fill="currentColor"/></symbol>
+  <symbol id="i-dash" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2.4 2.2"/></symbol>
+  <symbol id="i-x" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 4.8V8l2.2 1.4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 16 16"><path d="M8 2.2l6.3 11H1.7z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M8 6.5v3.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="11.4" r=".9" fill="currentColor"/></symbol>
+  <symbol id="i-wifi" viewBox="0 0 16 16"><path d="M2 6a9 9 0 0 1 12 0M4.3 8.5a5.6 5.6 0 0 1 7.4 0M6.6 11a2.2 2.2 0 0 1 2.8 0M2 2l12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+  <symbol id="i-qr" viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="8" y="8" width="8" height="8" rx="1.5" fill="currentColor"/></symbol>
+</svg>
+
+<div class="wrap">
+
+<div class="switch" role="group" aria-label="Accent direction">
+  <span class="cap">Compare accent</span>
+  <button type="button" id="acc-blue" aria-pressed="true"><span class="dot" style="background:var(--blue)"></span>Arabian Sea blue</button>
+  <button type="button" id="acc-pink" aria-pressed="false"><span class="dot" style="background:var(--pink)"></span>Bougainvillea</button>
+</div>
+
+<header class="hero">
+  <svg class="logo-lg" role="img" aria-label="Recall mark"><use href="#mark"/></svg>
+  <div>
+    <div class="cap">Brand board v2 · dark-first · no yellow, no teal</div>
+    <h1>recall</h1>
+    <p>Remember everyone you met at crypto week. Designed for the venue at night: dim rooms, one free hand, five seconds of attention.</p>
+  </div>
+</header>
+
+<h2>Palette</h2>
+<p>Ink and mist do most of the work. Only one colour means "act", so it stays special. Everything else is a state, and each state has its own colour, icon and word.</p>
+<div class="grid">
+  <div class="sw"><div class="chip-c" style="background:#0B0E13;color:#8796A8;box-shadow:inset 0 0 0 1px #33404F">#0B0E13</div><div class="meta"><b>Ink</b><span>Arabian Sea at night. Background, never pure black.</span></div></div>
+  <div class="sw"><div class="chip-c" style="background:#E9EDF2;color:#0B0E13">#E9EDF2 · 16.4:1</div><div class="meta"><b>Mist</b><span>Text and the logo's badge. Calm, readable at 1am.</span></div></div>
+  <span class="only-blue"><div class="sw"><div class="chip-c" style="background:#5B8CFF;color:#0B0E13">#5B8CFF · 6.1:1</div><div class="meta"><b>Arabian Sea blue · action</b><span>Scan, Record, Save. The water's bright edge at dusk.</span></div></div></span>
+  <span class="only-pink"><div class="sw"><div class="chip-c" style="background:#F25C9B;color:#0B0E13">#F25C9B · 6.2:1</div><div class="meta"><b>Bougainvillea · action</b><span>Scan, Record, Save. The pink spilling over Bandra walls.</span></div></div></span>
+  <div class="sw"><div class="chip-c" style="background:#3DD68C;color:#0B0E13">#3DD68C · 10.3:1</div><div class="meta"><b>Banyan green · linked</b><span>Confirmed identity. Rooted, settled.</span></div></div>
+  <div class="sw"><div class="chip-c" style="background:#8C9AB3;color:#0B0E13">#8C9AB3 · 6.8:1</div><div class="meta"><b>Slate · pending</b><span>Offline, waiting, queued. Neutral, not alarming.</span></div></div>
+  <div class="sw"><div class="chip-c" style="background:#FF8A73;color:#0B0E13">#FF8A73 · 8.4:1</div><div class="meta"><b>Coral · check</b><span>Needs a look: conflict, low wallet.</span></div></div>
+  <div class="sw"><div class="chip-c" style="background:#F2555A;color:#0B0E13">#F2555A · 5.7:1</div><div class="meta"><b>Crimson · error</b><span>Failed, rejected, destructive.</span></div></div>
+</div>
+<p class="cap" style="margin-top:14px">Contrast is against ink #0B0E13. Accent buttons use ink text. The light theme uses deeper versions, all ≥ 4.9:1 on white.</p>
+
+<h2>Type</h2>
+<p>A grotesque with character for names and titles, the system font for reading, and mono for anything you might mistype.</p>
+<div class="panel">
+  <div class="type-row"><span class="cap">Display · Bricolage 700</span><span style="font:700 40px/1.1 var(--display);letter-spacing:-.02em">Priya Sharma</span></div>
+  <div class="type-row"><span class="cap">Title · Bricolage 700</span><span style="font:700 22px var(--display)">IBW · Day 1 · Fairmont</span></div>
+  <div class="type-row"><span class="cap">Body · SF Pro 17</span><span style="font-size:17px">Building ZK credential proofs for KYC. Needs Solidity auditors before a January mainnet.</span></div>
+  <div class="type-row"><span class="cap">Handle · JetBrains Mono</span><span class="mono" style="font-size:16px">@priya_zk &nbsp; @priya_2k &nbsp; 0x0544…3980</span></div>
+</div>
+
+<h2>Identity states</h2>
+<p>Every state has an icon, a shape and a word, not just a colour. Confidence gets weaker from a green outline to a neutral outline to a dashed one. Low matches are always listed, and never pre-selected.</p>
+<div class="panel">
+  <div class="row">
+    <span class="chip c-linked"><svg class="ico"><use href="#i-check"/></svg>Linked</span>
+    <span class="chip c-high"><svg class="ico"><use href="#i-link"/></svg>High</span>
+    <span class="chip c-med"><svg class="ico"><use href="#i-q"/></svg>Medium</span>
+    <span class="chip c-low"><svg class="ico"><use href="#i-dash"/></svg>Low</span>
+    <span class="chip c-rej"><svg class="ico"><use href="#i-x"/></svg>Not them</span>
+    <span class="chip c-pend"><svg class="ico"><use href="#i-clock"/></svg>Pending</span>
+    <span class="chip c-conf"><svg class="ico"><use href="#i-warn"/></svg>Check</span>
+  </div>
+</div>
+
+<h2>Actions &amp; feedback</h2>
+<p>One primary per screen, in the bottom 40% where your thumb is. Feedback escalates from inline, to toast, to banner, to sheet, to alert, and never stacks.</p>
+<div class="two">
+  <div class="panel">
+    <span class="cap">Buttons</span>
+    <div class="row"><button class="btn b-pri" type="button">Save to Priya</button><button class="btn b-sec" type="button">Badge photo</button></div>
+    <div class="row"><button class="btn b-ghost" type="button">Change event</button><button class="btn b-dan" type="button">Delete Priya</button></div>
+    <span class="cap">Scan · 72pt, raised from the tab bar</span>
+    <div class="row"><span class="scanbtn" style="width:72px;height:72px;margin:0"><svg width="30" height="30"><use href="#i-qr"/></svg></span><span style="color:var(--text2);font-size:13px">Tap to scan · long-press for Rush mode</span></div>
+  </div>
+  <div class="panel">
+    <span class="cap">Toast · banner</span>
+    <div class="toast"><svg class="ico" style="color:var(--linked)"><use href="#i-check"/></svg>Saved · <span class="h">@priya_zk</span></div>
+    <div class="banner bn-off"><svg class="ico"><use href="#i-wifi"/></svg>Offline. Scans and notes still save.</div>
+    <div class="banner bn-bud"><svg class="ico"><use href="#i-warn"/></svg>Wallet low: 0.04 USDC<span class="act">Top up</span></div>
+    <div class="banner bn-err"><svg class="ico"><use href="#i-x"/></svg>twitterapi.io key was rejected<span class="act">Keys</span></div>
+  </div>
+</div>
+
+<h2>Screens</h2>
+<p>Sample data. The accent appears in only three places on a screen: Scan, the active tab, and a star.</p>
+<div class="phones">
+  <div class="ph" aria-label="Today screen mockup">
+    <div class="sb"><span>9:41</span><span>●●● 5G</span></div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline"><h3>Today</h3><span style="color:var(--text2);font-size:12px">Sat, Nov 1</span></div>
+    <div class="banner bn-off" style="height:34px;font-size:12px"><svg class="ico"><use href="#i-wifi"/></svg>Offline. Scans still save.</div>
+    <div class="evc"><span class="cap">You're at</span><b>IBW · Day 1</b><small>Fairmont Mumbai · matched by time + location · <span style="color:var(--action)">Change</span></small></div>
+    <span class="cap">Met today · 6</span>
+    <div class="prow"><div class="av ring">PS</div><div class="pcol"><b>Priya Sharma</b><span>ZK identity · 2:14pm</span></div><span class="chip c-conf" style="height:26px;font-size:11px">2 todo</span></div>
+    <div class="prow"><div class="av">0K</div><div class="pcol"><b class="mono" style="font-weight:500">@0xkaran</b><span>Saved offline · 3:02pm</span></div><span class="chip c-pend" style="height:26px;font-size:11px">Pending</span></div>
+    <div class="prow"><div class="av ring">MR</div><div class="pcol"><b>Marco R.</b><span>Restaking BD · 3:40pm</span></div><span class="star" aria-label="Starred">★</span></div>
+    <div class="prow"><div class="av">?</div><div class="pcol"><b>Wave · blue hoodie</b><span>Face only · keep or drop tonight</span></div></div>
+    <div class="tabbar"><span class="on">●<br>Today</span><span>○<br>People</span><span><span class="scanbtn"><svg width="26" height="26"><use href="#i-qr"/></svg></span></span><span>○<br>Follow-ups</span><span>○<br>Me</span></div>
+  </div>
+
+  <div class="ph" aria-label="Probable accounts screen mockup">
+    <div class="sb"><span>9:41</span><span>‹ Karan</span></div>
+    <div style="display:flex;gap:12px;align-items:center"><div class="av" style="width:56px;height:56px;font-size:18px">K</div><div class="pcol"><b style="font:700 22px var(--display)">Karan</b><span>From Devcon badge · first name only</span></div></div>
+    <div class="row" style="gap:6px"><span class="chip c-sel" style="height:28px;font-size:12px">X 9</span><span class="chip" style="height:28px;font-size:12px;border-color:var(--border);color:var(--text2)">LinkedIn 4</span><span class="chip" style="height:28px;font-size:12px;border-color:var(--border);color:var(--text2)">Telegram 2</span></div>
+    <span class="cap">High</span>
+    <div class="cand"><div class="av">K</div><div class="pcol"><b class="mono" style="font-weight:500">@karan_eth</b><span>building intents · BLR</span><span class="ev" style="color:var(--linked)">Posted about Devcon today · face looks similar</span></div><button class="pick" type="button">Pick</button></div>
+    <span class="cap">Medium</span>
+    <div class="cand"><div class="av">0K</div><div class="pcol"><b class="mono" style="font-weight:500">@0xkaran</b><span>solidity, audits · Mumbai</span><span class="ev" style="color:var(--text)">Follows 3 people you met</span></div><button class="pick" type="button">Pick</button></div>
+    <span class="cap">Low · name match only</span>
+    <div class="cand"><div class="av">KM</div><div class="pcol"><b class="mono" style="font-weight:500">@karanm</b><span>PM at a fintech · Pune</span><span class="ev" style="color:var(--text3)">No crypto signals</span></div><button class="pick" type="button">Pick</button></div>
+    <div class="sticky"><button class="btn b-sec" type="button">None of these</button><button class="btn b-pri" type="button">Compare 2</button></div>
+  </div>
+</div>
+
+<h2>Wallet</h2>
+<p>Balance, address, the network fee (zero, paid by the facilitator), and today's spend against your cap.</p>
+<div class="wallet">
+  <span class="cap">USDC on Base</span>
+  <div class="bal">14.20</div>
+  <div class="kv"><span>Address</span><b class="mono">0x0544…3980</b></div>
+  <div class="kv"><span>Network fee</span><b>$0.00 · paid by facilitator</b></div>
+  <div class="kv"><span>Today</span><b class="mono">$0.38 / $2.00</b></div>
+  <div class="bar"><i></i></div>
+  <div class="row"><button class="btn b-pri" type="button" style="height:48px">Top up</button><button class="btn b-sec" type="button">Change cap</button></div>
+</div>
+
+<h2>App icon</h2>
+<p>A conference badge in mist with the lanyard slot cut out, and one dot in the accent colour: a person you remembered.</p>
+<div class="row" style="gap:24px">
+  <div class="appicon"><svg width="68" height="68"><use href="#mark"/></svg></div>
+  <div class="appicon" style="width:60px;height:60px;border-radius:14px"><svg width="34" height="34"><use href="#mark"/></svg></div>
+  <div class="appicon" style="width:40px;height:40px;border-radius:9px"><svg width="23" height="23"><use href="#mark"/></svg></div>
+</div>
+
+<h2>Do and don't</h2>
+<div class="dont">
+  <div class="y"><div class="lbl">Do</div>Use the accent only for actions: Scan, Record, Save, the active tab, ★.</div>
+  <div class="n"><div class="lbl">Don't</div>Use the accent for states. Linked is green, pending is slate, a problem is coral or crimson.</div>
+  <div class="y"><div class="lbl">Do</div>Platform logos as monochrome glyphs. The chip carries the state.</div>
+  <div class="n"><div class="lbl">Don't</div>X, LinkedIn and Telegram brand blues on one row, competing with the accent.</div>
+  <div class="y"><div class="lbl">Do</div>"Offline. Scans and notes still save."</div>
+  <div class="n"><div class="lbl">Don't</div>"Oops! Network error 🙈"</div>
+</div>
+
+</div>
+
+<script>
+(function(){
+  var blue=document.getElementById('acc-blue'), pink=document.getElementById('acc-pink');
+  function set(a){
+    document.body.classList.toggle('accent-pink', a==='pink');
+    blue.setAttribute('aria-pressed', String(a!=='pink'));
+    pink.setAttribute('aria-pressed', String(a==='pink'));
+    try{localStorage.setItem('recall-accent', a)}catch(e){}
+  }
+  blue.addEventListener('click', function(){set('blue')});
+  pink.addEventListener('click', function(){set('pink')});
+  var saved=null; try{saved=localStorage.getItem('recall-accent')}catch(e){}
+  if(saved==='pink') set('pink');
+})();
+</script>

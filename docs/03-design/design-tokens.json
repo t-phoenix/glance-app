@@ -1,0 +1,352 @@
+{
+  "$description": "Recall design tokens. 3 tiers: reference -> semantic (per theme) -> component. W3C design-tokens style. Dark is the default theme. No yellow, no teal. Accent is 'seablue' by default; swap every 'seablue' reference in semantic.*.action* for 'bougainvillea' if that direction is chosen.",
+  "reference": {
+    "color": {
+      "ink": {
+        "950": "#0B0E13",
+        "900": "#12161D",
+        "800": "#1A2029",
+        "700": "#252D38",
+        "600": "#33404F",
+        "500": "#64748A"
+      },
+      "mist": {
+        "400": "#8796A8",
+        "300": "#A9B5C4",
+        "100": "#E9EDF2"
+      },
+      "paper": {
+        "0": "#FFFFFF",
+        "50": "#F4F6F8",
+        "200": "#DCE1E7",
+        "400": "#8593A3",
+        "600": "#5F6C7B",
+        "700": "#4A5868",
+        "950": "#121820"
+      },
+      "seablue": {
+        "400": "#5B8CFF",
+        "300": "#82A8FF",
+        "700": "#2F5FD0",
+        "900": "#15213D",
+        "100": "#E3EBFC"
+      },
+      "bougainvillea": {
+        "400": "#F25C9B",
+        "300": "#F684B4",
+        "700": "#C2266B",
+        "900": "#3A1527",
+        "100": "#FBE2EE"
+      },
+      "banyan": {
+        "400": "#3DD68C",
+        "700": "#117446",
+        "900": "#0F2A1D",
+        "100": "#DDF2E6"
+      },
+      "slate": {
+        "400": "#8C9AB3",
+        "700": "#56637A",
+        "900": "#1E2533",
+        "100": "#E6EAF0"
+      },
+      "coral": {
+        "400": "#FF8A73",
+        "700": "#B8432B",
+        "900": "#3A1D16",
+        "100": "#FCE6E0"
+      },
+      "crimson": {
+        "400": "#F2555A",
+        "700": "#C42B3A",
+        "900": "#3A1416",
+        "100": "#FBE1E3"
+      }
+    },
+    "font": {
+      "display": "BricolageGrotesque-Bold",
+      "text": "System",
+      "mono": "JetBrainsMono-Medium"
+    },
+    "space": {
+      "1": 4,
+      "2": 8,
+      "3": 12,
+      "4": 16,
+      "5": 20,
+      "6": 24,
+      "8": 32,
+      "10": 40
+    },
+    "radius": {
+      "sm": 8,
+      "md": 14,
+      "lg": 20,
+      "xl": 28,
+      "pill": 999
+    },
+    "duration": {
+      "fast": 120,
+      "base": 200,
+      "slow": 320
+    }
+  },
+  "semantic": {
+    "dark": {
+      "bg": "{color.ink.950}",
+      "surface1": "{color.ink.900}",
+      "surface2": "{color.ink.800}",
+      "surfacePressed": "{color.ink.700}",
+      "border": "{color.ink.600}",
+      "borderInput": "{color.ink.500}",
+      "text": "{color.mist.100}",
+      "text2": "{color.mist.300}",
+      "text3": "{color.mist.400}",
+      "action": "{color.seablue.400}",
+      "actionPressed": "{color.seablue.300}",
+      "onAction": "{color.ink.950}",
+      "actionTint": "{color.seablue.900}",
+      "linked": "{color.banyan.400}",
+      "linkedTint": "{color.banyan.900}",
+      "info": "{color.slate.400}",
+      "infoTint": "{color.slate.900}",
+      "danger": "{color.crimson.400}",
+      "dangerTint": "{color.crimson.900}",
+      "warning": "{color.coral.400}",
+      "warningTint": "{color.coral.900}"
+    },
+    "light": {
+      "bg": "{color.paper.50}",
+      "surface1": "{color.paper.0}",
+      "surface2": "{color.paper.0}",
+      "surfacePressed": "{color.paper.200}",
+      "border": "{color.paper.200}",
+      "borderInput": "{color.paper.400}",
+      "text": "{color.paper.950}",
+      "text2": "{color.paper.700}",
+      "text3": "{color.paper.600}",
+      "action": "{color.seablue.700}",
+      "actionPressed": "{color.seablue.400}",
+      "onAction": "{color.paper.0}",
+      "actionTint": "{color.seablue.100}",
+      "linked": "{color.banyan.700}",
+      "linkedTint": "{color.banyan.100}",
+      "info": "{color.slate.700}",
+      "infoTint": "{color.slate.100}",
+      "danger": "{color.crimson.700}",
+      "dangerTint": "{color.crimson.100}",
+      "warning": "{color.coral.700}",
+      "warningTint": "{color.coral.100}"
+    },
+    "type": {
+      "display": {
+        "font": "{font.display}",
+        "size": 34,
+        "line": 40,
+        "tracking": -0.5
+      },
+      "title1": {
+        "font": "{font.display}",
+        "size": 28,
+        "line": 34,
+        "tracking": -0.3
+      },
+      "title2": {
+        "font": "{font.display}",
+        "size": 22,
+        "line": 28
+      },
+      "headline": {
+        "font": "{font.text}",
+        "size": 17,
+        "line": 22,
+        "weight": "600"
+      },
+      "body": {
+        "font": "{font.text}",
+        "size": 17,
+        "line": 22
+      },
+      "callout": {
+        "font": "{font.text}",
+        "size": 16,
+        "line": 21
+      },
+      "subhead": {
+        "font": "{font.text}",
+        "size": 15,
+        "line": 20
+      },
+      "footnote": {
+        "font": "{font.text}",
+        "size": 13,
+        "line": 18
+      },
+      "caption": {
+        "font": "{font.text}",
+        "size": 12,
+        "line": 16,
+        "weight": "500",
+        "tracking": 0.4,
+        "case": "upper"
+      },
+      "handle": {
+        "font": "{font.mono}",
+        "size": 15,
+        "line": 20
+      },
+      "handleSm": {
+        "font": "{font.mono}",
+        "size": 13,
+        "line": 18
+      }
+    },
+    "touch": {
+      "min": 44,
+      "comfortable": 48,
+      "primary": 56
+    }
+  },
+  "component": {
+    "button": {
+      "primary": {
+        "bg": "{action}",
+        "fg": "{onAction}",
+        "height": 56,
+        "radius": "{radius.md}",
+        "font": "{type.headline}"
+      },
+      "secondary": {
+        "bg": "{surface2}",
+        "fg": "{text}",
+        "border": "{border}",
+        "height": 48,
+        "radius": "{radius.md}"
+      },
+      "ghost": {
+        "bg": "transparent",
+        "fg": "{action}",
+        "height": 44
+      },
+      "destructive": {
+        "bg": "{dangerTint}",
+        "fg": "{danger}",
+        "height": 48,
+        "radius": "{radius.md}"
+      },
+      "disabledOpacity": 0.4
+    },
+    "scanButton": {
+      "size": 72,
+      "bg": "{action}",
+      "fg": "{onAction}",
+      "raise": 16,
+      "ring": "{bg}",
+      "ringWidth": 4
+    },
+    "recordButton": {
+      "size": 88,
+      "bg": "{action}",
+      "ringActive": "{action}",
+      "lockSlide": 64
+    },
+    "chip": {
+      "height": 32,
+      "padX": 12,
+      "radius": "{radius.pill}",
+      "font": "{type.footnote}"
+    },
+    "chipState": {
+      "linked": {
+        "bg": "{linkedTint}",
+        "fg": "{linked}",
+        "icon": "checkmark.seal.fill"
+      },
+      "high": {
+        "border": "{linked}",
+        "fg": "{linked}",
+        "icon": "link"
+      },
+      "medium": {
+        "border": "{text2}",
+        "fg": "{text}",
+        "icon": "questionmark.circle"
+      },
+      "low": {
+        "border": "{text3}",
+        "borderStyle": "dashed",
+        "fg": "{text2}",
+        "icon": "circle.dashed"
+      },
+      "rejected": {
+        "fg": "{danger}",
+        "decoration": "line-through",
+        "icon": "xmark"
+      },
+      "pending": {
+        "bg": "{infoTint}",
+        "fg": "{info}",
+        "icon": "clock"
+      },
+      "conflict": {
+        "bg": "{warningTint}",
+        "fg": "{warning}",
+        "icon": "exclamationmark.triangle"
+      }
+    },
+    "card": {
+      "bg": "{surface1}",
+      "radius": "{radius.lg}",
+      "pad": "{space.4}"
+    },
+    "sheet": {
+      "bg": "{surface2}",
+      "radius": "{radius.xl}",
+      "grabber": "{text3}",
+      "pad": "{space.5}"
+    },
+    "toast": {
+      "bg": "{surface2}",
+      "fg": "{text}",
+      "radius": "{radius.md}",
+      "height": 48,
+      "top": 8,
+      "duration": 2500
+    },
+    "banner": {
+      "offline": {
+        "bg": "{infoTint}",
+        "fg": "{info}",
+        "icon": "wifi.slash"
+      },
+      "captive": {
+        "bg": "{infoTint}",
+        "fg": "{info}",
+        "icon": "wifi.exclamationmark"
+      },
+      "budget": {
+        "bg": "{warningTint}",
+        "fg": "{warning}",
+        "icon": "creditcard"
+      },
+      "error": {
+        "bg": "{dangerTint}",
+        "fg": "{danger}",
+        "icon": "exclamationmark.octagon"
+      },
+      "height": 40
+    },
+    "avatar": {
+      "sm": 36,
+      "md": 48,
+      "lg": 88,
+      "ringLinked": "{linked}"
+    },
+    "tabBar": {
+      "height": 49,
+      "bg": "{surface1}",
+      "active": "{action}",
+      "inactive": "{text3}"
+    }
+  }
+}

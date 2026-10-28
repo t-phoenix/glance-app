@@ -1,0 +1,51 @@
+{
+  "source": "https://cfp.devcon.org/devcon8/schedule/",
+  "schedule_version": "0.19",
+  "schedule_updated": "2026-10-20",
+  "doors": "09:30–17:00 listed on tickets.devcon.org. Talks run later on some days.",
+  "days": [
+    {
+      "date": "2026-11-03",
+      "talks": 67,
+      "first": "10:00",
+      "last": "18:00",
+      "stages": "Main, Lotus 1–3, Jasmine, Lightning, Workshop 1–2, Community, Music"
+    },
+    {
+      "date": "2026-11-04",
+      "talks": 123,
+      "first": "09:00",
+      "last": "18:00",
+      "stages": "Lotus 1–3, Jasmine, Lightning, Workshop 1–2, Community, Music"
+    },
+    {
+      "date": "2026-11-05",
+      "talks": 132,
+      "first": "09:30",
+      "last": "18:00",
+      "stages": "Above, plus Builders Room. Heaviest community-led day (32)."
+    },
+    {
+      "date": "2026-11-06",
+      "talks": 58,
+      "first": "09:30",
+      "last": "17:00",
+      "stages": "Lotus 1–3, Jasmine, Lightning, Workshop 1–2, Community, Music"
+    }
+  ],
+  "tracks": [
+    "Core Protocol",
+    "Applied Cryptography",
+    "Users, Builders, and Agents",
+    "Open & Verifiable Stack",
+    "Permissionless Networks",
+    "Security",
+    "Privacy & Consent",
+    "Rights, Freedoms, and Governance",
+    "Futures Worth Building",
+    "Art&Culture",
+    "Community Hubs",
+    "Community-led: DeFi 101, ETHIndia, Career Fair, Academic, Builder Enablement"
+  ],
+  "session_count": 380
+}

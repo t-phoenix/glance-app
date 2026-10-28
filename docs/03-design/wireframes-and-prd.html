@@ -1,0 +1,636 @@
+<title>Recall App Blueprint</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: single reading column for the PRD, a wrapping grid of phone frames for wireframes */
+:root{
+  --bg:#f5f6f7; --surface:#ffffff; --fg:#1b1e22; --muted:#5d6570; --line:#d9dde2;
+  --accent:#2F5FD0; --accent-soft:#E3EBFC; --ok:#2f7d4f; --warn:#B8432B;
+  --wf:#eceff2; --wf-ink:#8a929c;
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"Instrument Sans",ui-sans-serif,system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#121417; --surface:#1a1d21; --fg:#e7e9ec; --muted:#9aa3ad; --line:#2c3137;
+  --accent:#5B8CFF; --accent-soft:#15213D; --ok:#5fbf86; --warn:#FF8A73;
+  --wf:#23272c; --wf-ink:#6f7882; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121417; --surface:#1a1d21; --fg:#e7e9ec; --muted:#9aa3ad; --line:#2c3137;
+  --accent:#5B8CFF; --accent-soft:#15213D; --ok:#5fbf86; --warn:#FF8A73;
+  --wf:#23272c; --wf-ink:#6f7882; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:15px/1.6 var(--body)}
+.wrap{max-width:1120px;margin:0 auto;padding-block:40px 80px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.prose{max-width:720px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;line-height:1.15;margin:0}
+h1{font-size:clamp(2rem,5vw,3rem);font-weight:800}
+h2{font-size:1.6rem;font-weight:800;margin-top:56px;padding-top:16px;border-top:1px solid var(--line)}
+h3{font-size:1.1rem;font-weight:600;margin-top:28px}
+p,ul,ol{margin:12px 0}
+li{margin:4px 0}
+.eyebrow{font:600 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.lede{font-size:1.15rem;color:var(--muted);max-width:640px}
+code,.mono{font-family:var(--mono);font-size:.86em}
+nav.toc{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px}
+nav.toc a{font:500 13px var(--mono);color:var(--fg);text-decoration:none;border:1px solid var(--line);padding:6px 10px;border-radius:6px;background:var(--surface)}
+nav.toc a:hover,nav.toc a:focus-visible{border-color:var(--accent);outline:none}
+.tbl{overflow-x:auto;margin:16px 0;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:620px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:600 12px var(--mono);text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums;font-family:var(--mono);white-space:nowrap}
+.pill{display:inline-block;font:600 11px/1 var(--mono);padding:4px 7px;border-radius:999px;white-space:nowrap}
+.p0{background:var(--accent-soft);color:var(--accent)}
+.p1{background:var(--wf);color:var(--muted)}
+.free{color:var(--ok)}
+.callout{border:1px solid var(--accent);background:var(--accent-soft);border-radius:8px;padding:12px 16px;margin:16px 0;max-width:720px}
+.callout strong{color:var(--accent)}
+pre{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px;overflow-x:auto;font:13px/1.5 var(--mono)}
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:16px 0}
+.flow span{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 10px;font:500 13px var(--mono)}
+.flow i{font-style:normal;color:var(--muted)}
+
+/* Wireframes */
+.screens{display:grid;grid-template-columns:repeat(auto-fill,minmax(262px,1fr));gap:28px 20px;margin-top:24px}
+figure{margin:0;display:flex;flex-direction:column;gap:10px;min-width:0}
+figcaption{font-size:13px;color:var(--muted)}
+figcaption b{display:block;font:600 13px var(--mono);color:var(--fg)}
+.phone{width:262px;max-width:100%;height:540px;border:2px solid var(--fg);border-radius:30px;background:var(--surface);padding:14px 12px;display:flex;flex-direction:column;gap:9px;overflow:hidden;font-size:12px;line-height:1.35;position:relative}
+.sb{display:flex;justify-content:space-between;font:600 10px var(--mono);color:var(--muted);padding:0 6px}
+.hd{display:flex;justify-content:space-between;align-items:center;font:700 15px var(--display)}
+.hd small{font:500 10px var(--mono);color:var(--muted)}
+.box{background:var(--wf);border-radius:10px;padding:9px}
+.ln{height:7px;background:var(--wf-ink);opacity:.35;border-radius:4px}
+.row{display:flex;gap:8px;align-items:center}
+.col{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1}
+.av{width:34px;height:34px;border-radius:50%;background:var(--wf-ink);opacity:.5;flex:none}
+.av.lg{width:64px;height:64px}
+.chip{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:3px 7px;font:500 10px var(--mono);color:var(--muted);background:var(--surface)}
+.chip.on{border-color:var(--accent);color:var(--accent)}
+.btn{border:1.5px solid var(--fg);border-radius:9px;padding:7px;text-align:center;font-weight:600}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.btn.sm{padding:3px 8px;font-size:10px;border-radius:7px;flex:none}
+.cam{flex:1;background:var(--wf);border-radius:12px;display:grid;place-items:center;position:relative}
+.reticle{width:130px;height:130px;border:3px dashed var(--accent);border-radius:14px}
+.tabs{margin-top:auto;display:flex;justify-content:space-around;border-top:1px solid var(--line);padding-top:8px;font:500 10px var(--mono);color:var(--muted)}
+.tabs .on{color:var(--accent)}
+.fab{width:64px;height:64px;border-radius:50%;background:var(--accent);margin:0 auto;display:grid;place-items:center;color:var(--surface);font:700 11px var(--mono)}
+.lbl{font:600 10px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.conf{font:600 10px var(--mono)}
+.hi{color:var(--ok)} .md{color:var(--warn)}
+.wave{display:flex;gap:2px;align-items:center;height:28px}
+.wave i{display:block;width:3px;background:var(--accent);border-radius:2px}
+.chk{width:12px;height:12px;border:1.5px solid var(--fg);border-radius:3px;flex:none}
+.qr{width:150px;height:150px;margin:0 auto;background:
+  repeating-linear-gradient(90deg,var(--fg) 0 8px,transparent 8px 15px),
+  repeating-linear-gradient(0deg,var(--fg) 0 8px,transparent 8px 13px);opacity:.75;border-radius:6px}
+.note{font-size:10px;color:var(--muted);font-style:italic}
+@media (prefers-reduced-motion:no-preference){nav.toc a{transition:border-color .15s}}
+</style>
+
+<div class="wrap">
+<header class="prose">
+  <div class="eyebrow">PRD v0.2 · personal iOS app · IBW Nov 1–2 · Devcon Nov 3–6 · Mumbai</div>
+  <h1 style="margin-top:12px">Recall</h1>
+  <p class="lede">Scan someone's badge or social QR, and Recall builds one profile for that person, adds a photo and a voice note of what you talked about, tags the event automatically, and turns it all into follow-ups you can act on after IBW, Devcon and ETHGlobal.</p>
+  <nav class="toc" aria-label="Sections">
+    <a href="#priorart">Existing apps</a><a href="#wireframes">Wireframes</a><a href="#problem">Problem</a><a href="#reqs">Requirements</a>
+    <a href="#rush">Rush mode</a><a href="#eventapps">Event apps</a><a href="#unknownqr">Unknown QR</a>
+    <a href="#identity">Identity resolution</a><a href="#audit">Audit</a><a href="#sources">Data sources &amp; cost</a><a href="#stack">Tech stack</a>
+    <a href="#social">Your accounts</a><a href="#data">Data model</a><a href="#plan">Build plan</a><a href="#risks">Risks</a>
+  </nav>
+</header>
+
+<section id="wireframes">
+<h2>Wireframes</h2>
+<p class="prose">Low-fidelity screens. The names, handles and venues in them are example data, not real people. Orange marks the main action on each screen.</p>
+<div class="screens">
+
+<figure>
+<div class="phone">
+  <div class="sb"><span>9:41</span><span>5G ▮▮▮</span></div>
+  <div class="hd">Today <small>Nov 1</small></div>
+  <div class="box" style="border:1.5px solid var(--accent)">
+    <div class="lbl">You're at</div>
+    <div style="font-weight:600;font-size:13px">IBW · Day 1</div>
+    <div class="note">Matched by time + GPS · change</div>
+  </div>
+  <div class="fab">SCAN</div>
+  <div class="row" style="justify-content:center;gap:6px"><span class="chip">Badge photo</span><span class="chip">Type handle</span><span class="chip">Paste link</span></div>
+  <div class="lbl">Met today · 6</div>
+  <div class="row"><div class="av"></div><div class="col"><b>Priya S.</b><span class="note">ZK identity · 2:14pm</span></div><span class="chip on">2 todo</span></div>
+  <div class="row"><div class="av"></div><div class="col"><b>@0xkaran</b><span class="note">Enriching… · 3:02pm</span></div><span class="chip">queued</span></div>
+  <div class="row"><div class="av"></div><div class="col"><b>Marco R.</b><span class="note">Restaking BD · 3:40pm</span></div></div>
+  <div class="tabs"><span class="on">Today</span><span>People</span><span>Follow-ups</span><span>Me</span></div>
+</div>
+<figcaption><b>01 · Today</b>The home screen. It knows which event you're at, so Scan is one tap. Enrichment that's still running shows as "queued".</figcaption>
+</figure>
+
+<figure>
+<div class="phone">
+  <div class="sb"><span>9:41</span><span>✕</span></div>
+  <div class="cam"><div class="reticle"></div>
+    <div style="position:absolute;bottom:10px;left:0;right:0;text-align:center" class="note">Point at a badge, LinkedIn, X, Telegram or WhatsApp QR</div>
+  </div>
+  <div class="box row"><span class="chip on">LinkedIn</span><span class="col"><span class="mono" style="font-size:10px">linkedin.com/in/priya-s…</span></span></div>
+  <div class="row" style="gap:6px"><div class="btn" style="flex:1">Badge photo</div><div class="btn" style="flex:1">Type @</div></div>
+  <div class="note">No QR? Take a photo of the badge and AI reads the name and company off it.</div>
+</div>
+<figcaption><b>02 · Scan</b>One camera for every QR type. The type is detected from the URL or vCard. Opaque ticket QRs fall back to reading the badge photo.</figcaption>
+</figure>
+
+<figure>
+<div class="phone">
+  <div class="sb"><span>9:41</span><span>‹ Back</span></div>
+  <div class="row"><div class="av lg"></div><div class="col"><b style="font-size:14px">Priya Sharma</b><span class="note">Founder @ zkPass-like startup</span><span class="chip on" style="align-self:flex-start">Source: LinkedIn</span></div></div>
+  <div class="box"><div class="ln" style="width:90%"></div><div class="ln" style="width:70%;margin-top:5px"></div><div class="note" style="margin-top:4px">Headline, location, current role</div></div>
+  <div class="lbl">Probably also · not linked</div>
+  <div class="box row"><div class="col"><b>X · @priyabuilds</b><span class="conf hi">High · linked in her bio</span></div><div class="btn sm">Follow</div></div>
+  <div class="box row"><div class="col"><b>Telegram · @priya_zk</b><span class="conf md">Medium · same name + photo</span></div><div class="btn sm">Open</div></div>
+  <div class="box row"><div class="col"><b>GitHub · psharma</b><span class="conf md">Medium · website match</span></div><div class="btn sm">Open</div></div>
+  <div class="row" style="gap:6px"><span class="chip">✓ Confirm</span><span class="chip">✕ Not her</span><span class="chip">+ Add handle</span></div>
+  <div class="btn pri" style="margin-top:auto">Add photo &amp; voice note →</div>
+</div>
+<figcaption><b>03 · Identity</b>The scanned account is the anchor. Other platforms are suggestions with a reason and a confidence level. You confirm each one yourself, and Follow opens that app.</figcaption>
+</figure>
+
+<figure>
+<div class="phone">
+  <div class="sb"><span>9:41</span><span>‹ Priya</span></div>
+  <div class="box" style="height:150px;display:grid;place-items:center"><span class="note">Selfie / photo · tap to retake</span></div>
+  <div class="row" style="flex-wrap:wrap;gap:5px"><span class="chip on">IBW Day 1</span><span class="chip">2:14pm</span><span class="chip">Main hall</span><span class="chip">19.06°N 72.86°E</span></div>
+  <div class="lbl">Voice note · 0:48 / 2:00</div>
+  <div class="box"><div class="wave">
+    <i style="height:30%"></i><i style="height:70%"></i><i style="height:50%"></i><i style="height:90%"></i><i style="height:40%"></i><i style="height:65%"></i><i style="height:80%"></i><i style="height:35%"></i><i style="height:55%"></i><i style="height:75%"></i><i style="height:45%"></i><i style="height:85%"></i><i style="height:30%"></i><i style="height:60%"></i><i style="height:40%"></i><i style="height:70%"></i><i style="height:50%"></i><i style="height:25%"></i>
+  </div></div>
+  <div class="note">Prompt: How did you meet? What did you talk about? What happens next?</div>
+  <div class="fab" style="margin-top:auto">HOLD</div>
+  <div class="note" style="text-align:center">Saved offline · AI runs when online</div>
+</div>
+<figcaption><b>04 · Capture</b>Photo plus a voice note of up to 2 minutes. Event, time and place are added automatically. Everything saves offline first, because venue Wi-Fi will be bad.</figcaption>
+</figure>
+
+<figure>
+<div class="phone">
+  <div class="sb"><span>9:41</span><span>Review</span></div>
+  <div class="hd">AI summary <small>edit any field</small></div>
+  <div class="box"><div class="lbl">Who</div>Priya Sharma, founder, building ZK credential proofs for KYC</div>
+  <div class="box"><div class="lbl">Talked about</div>Bangalore hackathon; she needs Solidity auditors before mainnet in Jan; liked our bridge UX</div>
+  <div class="box"><div class="lbl">Can help me with</div>Intro to Polygon ecosystem team</div>
+  <div class="lbl">Action items</div>
+  <div class="row"><div class="chk"></div><div class="col"><b>Intro her to Rahul (auditor)</b><span class="note">Me → by Nov 5 · Telegram</span></div></div>
+  <div class="row"><div class="chk"></div><div class="col"><b>She sends deck</b><span class="note">Her → nudge Nov 8</span></div></div>
+  <div class="row" style="gap:5px"><span class="chip on">#zk</span><span class="chip on">#founder</span><span class="chip">+ tag</span></div>
+  <div class="btn pri" style="margin-top:auto">Save to Priya</div>
+</div>
+<figcaption><b>05 · AI review</b>Claude turns the transcript into fixed fields. Action items record who owes whom, a due date and the channel to use. Review takes about 10 seconds.</figcaption>
+</figure>
+
+<figure>
+<div class="phone">
+  <div class="sb"><span>9:41</span><span>‹ People</span></div>
+  <div class="row"><div class="av lg"></div><div class="col"><b style="font-size:14px">Priya Sharma</b><span class="note">ZK credentials · founder</span></div></div>
+  <div class="row" style="gap:5px;flex-wrap:wrap"><span class="chip on">in LinkedIn</span><span class="chip on">X ✓</span><span class="chip on">TG ✓</span><span class="chip">GitHub ?</span></div>
+  <div class="row" style="gap:6px"><div class="btn" style="flex:1">Message</div><div class="btn" style="flex:1">Follow all</div></div>
+  <div class="lbl">Encounters</div>
+  <div class="box"><b>IBW Day 1 · 2:14pm</b><div class="note">Photo · 0:48 voice · ZK auditors, Jan mainnet</div></div>
+  <div class="box"><b>Devcon Day 2 · 11:30am</b><div class="note">Bumped at ZK stage · confirmed deck coming</div></div>
+  <div class="lbl">Open actions · 1</div>
+  <div class="row"><div class="chk"></div><b>Intro to Rahul</b><span class="chip on" style="margin-left:auto">Nov 5</span></div>
+</div>
+<figcaption><b>06 · Person</b>One profile with several encounters. If you meet her again at Devcon, the second encounter is added to the same timeline.</figcaption>
+</figure>
+
+<figure>
+<div class="phone">
+  <div class="sb"><span>9:41</span><span></span></div>
+  <div class="hd">People <small>84</small></div>
+  <div class="box row"><span class="mono" style="font-size:11px">the restaking guy from the pragma party</span></div>
+  <div class="row" style="gap:5px;flex-wrap:wrap"><span class="chip on">ETHGlobal Pragma</span><span class="chip">IBW</span><span class="chip">Devcon</span><span class="chip">Afterparty</span><span class="chip">Has todo</span></div>
+  <div class="row"><div class="av"></div><div class="col"><b>Marco R.</b><span class="note">"…restaking BD, Pragma rooftop…"</span></div></div>
+  <div class="row"><div class="av"></div><div class="col"><b>@eigen_ari</b><span class="note">"…LRT liquidity, asked about…"</span></div></div>
+  <div class="note">Searches names, handles, transcripts, tags and events, all on the device.</div>
+  <div class="tabs"><span>Today</span><span class="on">People</span><span>Follow-ups</span><span>Me</span></div>
+</div>
+<figcaption><b>07 · People &amp; search</b>Search by what you remember, not by name. Full-text search over transcripts runs locally in SQLite.</figcaption>
+</figure>
+
+<figure>
+<div class="phone">
+  <div class="sb"><span>9:41</span><span></span></div>
+  <div class="hd">Follow-ups <small>7 open</small></div>
+  <div class="row" style="gap:5px"><span class="chip on">Overdue 1</span><span class="chip">This week 4</span><span class="chip">Waiting 2</span></div>
+  <div class="box">
+    <div class="row"><div class="av"></div><div class="col"><b>Priya · Intro to Rahul</b><span class="note">via Telegram · due Nov 5</span></div></div>
+    <div class="box" style="background:var(--surface);margin-top:6px;font-size:11px">Hey Priya, great chatting at IBW about auditors for your Jan mainnet. Looping in Rahul…</div>
+    <div class="row" style="gap:6px;margin-top:6px"><div class="btn sm" style="background:var(--accent);border-color:var(--accent);color:var(--surface)">Copy + open TG</div><div class="btn sm">Edit</div><div class="btn sm">Done</div></div>
+  </div>
+  <div class="row"><div class="av"></div><div class="col"><b>Marco · send pitch deck</b><span class="note">via X DM · due Nov 9</span></div></div>
+  <div class="row"><div class="av"></div><div class="col"><b>@0xkaran · nudge for grant link</b><span class="note">waiting on them</span></div></div>
+  <div class="tabs"><span>Today</span><span>People</span><span class="on">Follow-ups</span><span>Me</span></div>
+</div>
+<figcaption><b>08 · Follow-ups</b>Each action has a drafted message in the channel you share with that person. Recall opens the chat and you send it yourself.</figcaption>
+</figure>
+
+<figure>
+<div class="phone">
+  <div class="sb"><span>11:00 PM</span><span></span></div>
+  <div class="hd">Day recap <small>IBW Day 1</small></div>
+  <div class="row" style="gap:6px">
+    <div class="box col" style="text-align:center"><b style="font-size:18px">14</b><span class="note">people</span></div>
+    <div class="box col" style="text-align:center"><b style="font-size:18px">5</b><span class="note">actions</span></div>
+    <div class="box col" style="text-align:center"><b style="font-size:18px">3</b><span class="note">to fix</span></div>
+  </div>
+  <div class="lbl">Needs a look</div>
+  <div class="box row"><div class="av"></div><div class="col"><b>@degenwizard</b><span class="note">No real name yet · add one?</span></div></div>
+  <div class="box row"><div class="av"></div><div class="col"><b>Voice note failed</b><span class="note">Retry transcription</span></div></div>
+  <div class="lbl">Tomorrow</div>
+  <div class="note">IBW Day 2 · 3 side events saved · 2 people you said you'd find again</div>
+  <div class="btn pri" style="margin-top:auto">Review 3 items</div>
+</div>
+<figcaption><b>09 · Nightly recap</b>A local notification at 11pm. Fix mistakes while you still remember the faces.</figcaption>
+</figure>
+
+<figure>
+<div class="phone">
+  <div class="sb"><span>9:41</span><span></span></div>
+  <div class="hd">My card</div>
+  <div class="row" style="gap:5px;justify-content:center"><span class="chip on">X</span><span class="chip">LinkedIn</span><span class="chip">Telegram</span><span class="chip">All</span></div>
+  <div class="qr"></div>
+  <div class="note" style="text-align:center">They scan with their own camera, so they don't need the app</div>
+  <div class="lbl" style="margin-top:6px">Settings</div>
+  <div class="box row"><div class="col"><b>x402 wallet</b><span class="note">Base · 14.20 USDC · cap $2/day</span></div></div>
+  <div class="box row"><div class="col"><b>API keys</b><span class="note">twitterapi.io ✓ · Anthropic ✓</span></div></div>
+  <div class="box row"><div class="col"><b>Events</b><span class="note">27 loaded · IBW, Devcon, ETHGlobal, Luma</span></div></div>
+  <div class="box row"><div class="col"><b>Export</b><span class="note">CSV / JSON / Notion</span></div></div>
+  <div class="tabs"><span>Today</span><span>People</span><span>Follow-ups</span><span class="on">Me</span></div>
+</div>
+<figcaption><b>10 · My card &amp; settings</b>Your own QR to share, plus keys, wallet spend cap, the event list and export.</figcaption>
+</figure>
+
+<figure>
+<div class="phone">
+  <div class="sb"><span>9:41</span><span>‹ Scan</span></div>
+  <div class="hd">Unknown QR <small>decoded</small></div>
+  <div class="box"><div class="lbl">Raw payload</div><span class="mono" style="font-size:10px;word-break:break-all">https://devcon.org/ticket/karan/x7f2k…</span></div>
+  <div class="box"><div class="lbl">What it is</div><b>Devcon ticket share link</b><div class="note">Public page shows the name "karan" · no contact info</div></div>
+  <div class="box"><div class="lbl">Found</div>
+    <div class="row"><span class="chip on">name: karan</span><span class="chip">event: Devcon</span></div>
+  </div>
+  <div class="box row"><div class="col"><b>Search socials for "karan" + Devcon?</b><span class="note">Weak lead: first name only</span></div></div>
+  <div class="row" style="gap:6px"><div class="btn" style="flex:1">Badge photo</div><div class="btn pri" style="flex:1">Search</div></div>
+  <div class="note">Opened as text only. Unknown links are never opened in a browser or wallet.</div>
+</div>
+<figcaption><b>11 · Unknown QR</b>The app decodes what the QR holds (URL, vCard, JWT, wallet address, ticket ID), tells you what it is and what it found, and suggests the next step.</figcaption>
+</figure>
+
+<figure>
+<div class="phone">
+  <div class="sb"><span>9:41</span><span>‹ Karan</span></div>
+  <div class="hd">Probable accounts <small>X · 9</small></div>
+  <div class="row" style="gap:5px"><span class="chip on">X 9</span><span class="chip">LinkedIn 4</span><span class="chip">TG 2</span><span class="chip">GitHub 3</span></div>
+  <div class="box row"><div class="av"></div><div class="col"><b>@karan_eth</b><span class="note">"building intents @…" · BLR</span><span class="conf hi">Posted about IBW today · face ≈ your photo</span></div><div class="btn sm">Pick</div></div>
+  <div class="box row"><div class="av"></div><div class="col"><b>@karanm</b><span class="note">"PM at fintech" · Pune</span><span class="conf md">Name only · no crypto signals</span></div><div class="btn sm">Pick</div></div>
+  <div class="box row"><div class="av"></div><div class="col"><b>@0xkaran</b><span class="note">"solidity, audits" · Mumbai</span><span class="conf md">Follows 3 people you met</span></div><div class="btn sm">Pick</div></div>
+  <div class="note">+6 more · sorted by evidence</div>
+  <div class="row" style="gap:6px;margin-top:auto"><div class="btn" style="flex:1">None of these</div><div class="btn" style="flex:1">Compare 2</div></div>
+</div>
+<figcaption><b>12 · Probable accounts</b>For common names you get the full candidate list per platform, each with its avatar, bio and the evidence behind its rank. Nothing is linked until you tap Pick.</figcaption>
+</figure>
+
+<figure>
+<div class="phone">
+  <div class="sb"><span>9:41</span><span>‹ Priya</span></div>
+  <div class="hd">Same person? <small>compare</small></div>
+  <div class="row" style="gap:6px;align-items:stretch">
+    <div class="box col" style="text-align:center"><div class="av" style="margin:0 auto"></div><b>LinkedIn</b><span class="note">Priya Sharma · Founder, ZK startup · Mumbai</span></div>
+    <div class="box col" style="text-align:center"><div class="av" style="margin:0 auto"></div><b>X</b><span class="note">priya.eth · "proofs &gt; promises" · cartoon avatar</span></div>
+  </div>
+  <div class="box"><div class="lbl">Evidence</div>
+    <div class="note">✓ X bio links her company site</div>
+    <div class="note">✓ Same company in both</div>
+    <div class="note">✗ Avatar is a cartoon, can't match the face</div>
+  </div>
+  <div class="box"><div class="lbl">Keep on profile</div><span class="note">Both photos and both bios, each labelled with where it came from</span></div>
+  <div class="row" style="gap:6px;margin-top:auto"><div class="btn" style="flex:1">Not her</div><div class="btn pri" style="flex:1">Confirm link</div></div>
+</div>
+<figcaption><b>13 · Compare &amp; confirm</b>The two profiles side by side: photos, names, bios and the evidence for and against. Every link needs your Confirm.</figcaption>
+</figure>
+
+<figure>
+<div class="phone">
+  <div class="sb"><span>9:41</span><span>RUSH ●</span></div>
+  <div class="hd">Rush mode <small>IBW · 3:40pm</small></div>
+  <div class="cam" style="flex:0 0 150px"><div class="reticle" style="width:90px;height:90px"></div></div>
+  <div class="note" style="text-align:center">Scan, scan, scan. Each scan saves a stub and beeps.</div>
+  <div class="lbl">This huddle · 4</div>
+  <div class="row"><span class="chip on">★ @0xkaran</span><span class="chip">Marco R.</span><span class="chip">badge photo</span><span class="chip">+ wave</span></div>
+  <div class="box row"><div class="col"><b>One note for the group</b><span class="note">"Karan's the auditor, Marco does BD at Eigen…"</span></div></div>
+  <div class="fab" style="width:54px;height:54px;margin-top:auto">HOLD</div>
+  <div class="btn">End huddle</div>
+</div>
+<figcaption><b>14 · Rush mode</b>For when five people crowd you at once. Scan everyone quickly, tap ★ on the ones that matter, then record one voice note for the whole group. "+ wave" saves a person you only have a face for.</figcaption>
+</figure>
+
+<figure>
+<div class="phone">
+  <div class="sb"><span>9:45</span><span>‹ Huddle</span></div>
+  <div class="hd">Split the note <small>4 people</small></div>
+  <div class="box"><div class="lbl">@0xkaran ★</div>Solidity auditor, has capacity in Nov<div class="note">Action: intro to Priya</div></div>
+  <div class="box"><div class="lbl">Marco R.</div>BD at a restaking project, wants Indian devs</div>
+  <div class="box"><div class="lbl">Badge photo · "Ananya, Polygon"</div>Grants team, said to DM on Telegram</div>
+  <div class="box" style="border:1.5px dashed var(--line);background:transparent"><div class="lbl">Wave · blue shirt</div><span class="note">Not mentioned in the note. Keep or drop?</span></div>
+  <div class="row" style="gap:6px;margin-top:auto"><div class="btn" style="flex:1">Drop unmentioned</div><div class="btn pri" style="flex:1">Save all</div></div>
+</div>
+<figcaption><b>15 · Split the note</b>Claude assigns each part of the group note to the person it describes. Anyone you never mentioned is flagged so you can drop them.</figcaption>
+</figure>
+
+<figure>
+<div class="phone">
+  <div class="sb"><span>9:41</span><span>‹ Add</span></div>
+  <div class="hd">Import <small>from other apps</small></div>
+  <div class="box"><div class="lbl">Screenshot</div><b>Share a screenshot of a profile</b><div class="note">From the IBW app, ETHGlobal, Devcon or Luma. AI reads the name, role, handles and photo.</div></div>
+  <div class="box"><div class="lbl">Share sheet</div><b>Share a profile link to Recall</b><div class="note">From X, LinkedIn or Telegram. It opens on the Identity screen.</div></div>
+  <div class="box"><div class="lbl">Event list</div><b>Paste a Luma or side-event link</b><div class="note">Adds the event's time and place for auto-matching.</div></div>
+  <div class="box"><div class="lbl">Speaker pages</div><b>Import a "want to meet" list</b><div class="note">Speakers from the IBW and Devcon sites. Scanning one of them flags it.</div></div>
+</div>
+<figcaption><b>16 · Import</b>For when someone connected with you inside an event app: a screenshot or shared link gets them into Recall without needing an API.</figcaption>
+</figure>
+
+</div>
+</section>
+
+<section id="priorart">
+<h2>Existing apps (checked Oct 23)</h2>
+<p class="prose">No existing app does the whole job for a crypto event. Several cover the LinkedIn-and-voice-note part well. What none of them do is X, Telegram, figuring out who's behind a pseudonymous account, or handling a crowd.</p>
+<div class="tbl"><table>
+<tr><th>App / repo</th><th>What it covers</th><th>What it misses for us</th><th>Verdict</th></tr>
+<tr><td><a href="https://convu.ai">Convu</a> (iOS/Android)</td><td>LinkedIn QR scan, voice note as you walk away, enrichment, event from calendar or Luma, location, drafts sent from WhatsApp, LinkedIn or email</td><td>No X or Telegram identity, no pseudonym matching, cloud only. The free plan has only 10 voice notes a month; Pro costs £15/mo.</td><td>Closest match. Try it today.</td></tr>
+<tr><td><a href="https://connectmachine.ai">ConnectMachine</a></td><td>Card and QR scanning, voice notes pinned to the contact, place and time, 2-day follow-up nudge, AI search, MCP</td><td>Built around business cards. No X or Telegram identity matching.</td><td>Close for capture</td></tr>
+<tr><td><a href="https://relos.eu">RELOS</a></td><td>Photo, voice or text capture, notes only in your own voice, grouped by event, LinkedIn and WhatsApp drafts</td><td>No QR or social matching. Built for EU business development.</td><td>Same idea as us, different audience</td></tr>
+<tr><td>Wavee (Bondex)</td><td>Telegram-native contact swap for web3, launched at Token2049 in 2025</td><td>Both people need the app. Current status unclear. No notes or AI.</td><td>Skip</td></tr>
+<tr><td><a href="https://github.com/Ayaan2907/wingmic">wingmic</a> (MIT, pushed Oct 16)</td><td>Voice dump into a memory graph of people, events, topics and actions. Ask questions in plain English.</td><td>A web app with a server. No scanning or social profiles.</td><td>Borrow its extraction prompts and schema</td></tr>
+<tr><td><a href="https://github.com/perhapspranav/Recco">Recco</a> (MIT, Swift)</td><td>Works out who someone is from a badge or profile, checks the face, drafts outreach</td><td>Needs a backend, and the AR UI is too much</td><td>Borrow its identity matching steps</td></tr>
+<tr><td><a href="https://ethglobal.com/showcase/introgram-x72by">IntroGram</a> (ETHGlobal)</td><td>Telegram mini-app: transcribe, summarise, link a Telegram handle</td><td>Records the other person. Hackathon demo only.</td><td>Proves the need exists</td></tr>
+<tr><td><a href="https://dorahacks.io/buidl/26965">Connections</a> (DoraHacks)</td><td>Telegram QR plus notes per event, stored locally, AI chat</td><td>No enrichment or voice notes</td><td>Proves the need exists</td></tr>
+<tr><td><a href="https://github.com/AIFrontiersLab/LyncSnap">LyncSnap</a> (Swift)</td><td>LinkedIn QR, notes, end-of-day summary</td><td>LinkedIn only. No license, so it can't be reused.</td><td>Skip</td></tr>
+</table></div>
+<div class="callout"><strong>Decision:</strong> don't rebuild what Convu already does. Build only what's specific to crypto events: scanning X, Telegram and badge QRs, matching pseudonymous accounts across platforms with your confirmation, rush mode, and Telegram/X follow-ups. That's about 4 days of work instead of 9. Use Convu, or our own minimal capture screen, for LinkedIn.</div>
+</section>
+
+<section id="problem" class="prose">
+<h2>Problem &amp; goals</h2>
+<p>At a conference week you meet 50 to 150 people in loud rooms. You connect on X, Telegram or LinkedIn, often through pseudonymous handles, and a week later you can't tell who <code>@degenwizard</code> was, what you discussed, or what you promised.</p>
+<h3>Goals</h3>
+<ul>
+  <li>Capture a person in <b>under 20 seconds</b>: scan, photo, voice note.</li>
+  <li>Give each person <b>one identity</b> across X, LinkedIn, Telegram and WhatsApp, with suggestions for other platforms that you confirm yourself.</li>
+  <li><b>Recall context</b>: face, event, place, what was said and what happens next.</li>
+  <li>Make <b>follow-ups</b> easy: each action has a drafted message and opens the right app.</li>
+  <li>Run <b>locally</b> with no backend and pay per use, about $0.10 or less per person.</li>
+</ul>
+<h3>Non-goals for v1</h3>
+<ul>
+  <li>Sending DMs or following people automatically. You tap Follow and Send yourself.</li>
+  <li>Sync across devices, accounts, Android, or an App Store release.</li>
+  <li>Logging into your social accounts through OAuth (reasons in <a href="#social">Your accounts</a>).</li>
+</ul>
+</section>
+
+<section id="reqs">
+<h2>Requirements</h2>
+<div class="tbl"><table>
+<tr><th>Pri</th><th>Feature</th><th>Requirement</th></tr>
+<tr><td><span class="pill p0">P0</span></td><td>Scan</td><td>Single camera scanner that detects LinkedIn, X, Telegram and WhatsApp URLs, vCards, and plain text. Also supports typing a handle manually.</td></tr>
+<tr><td><span class="pill p0">P0</span></td><td>Badge fallback</td><td>Photo of the badge goes to Claude vision, which returns name, company, role and any handles printed on it.</td></tr>
+<tr><td><span class="pill p0">P0</span></td><td>Identity</td><td>Builds a Person from the scanned account (anchor). Fetches its public profile. Suggests other platforms with confidence and a reason, never linked automatically.</td></tr>
+<tr><td><span class="pill p0">P0</span></td><td>Follow buttons</td><td>Each handle deep-links into the native app, or to the web if the app isn't installed.</td></tr>
+<tr><td><span class="pill p0">P0</span></td><td>Photo + voice</td><td>One photo plus a voice note of up to 2 minutes. Recording continues if the screen locks.</td></tr>
+<tr><td><span class="pill p0">P0</span></td><td>Auto context</td><td>Timestamp, GPS, and the event matched against a local event list (time window plus geofence). One tap to override.</td></tr>
+<tr><td><span class="pill p0">P0</span></td><td>AI structuring</td><td>Transcript goes to Claude, which returns JSON: who, what they do, topics, can-help-with, needs, action items (owner, due date, channel), tags.</td></tr>
+<tr><td><span class="pill p0">P0</span></td><td>Offline queue</td><td>Capture never blocks on the network. Enrichment and AI jobs retry when back online.</td></tr>
+<tr><td><span class="pill p0">P0</span></td><td>Follow-ups</td><td>List of action items with a drafted message. Copies the text and opens Telegram, WhatsApp, X DM or LinkedIn.</td></tr>
+<tr><td><span class="pill p0">P0</span></td><td>Rush mode</td><td>Continuous scanning into stubs, ★ to mark important, one group note split per person, "+ wave" for a face only.</td></tr>
+<tr><td><span class="pill p0">P0</span></td><td>Unknown QR decoder</td><td>Recognises vCard, URL, JWT, address/ENS and JSON. Fetches URLs as text only. Claude explains what it is and suggests the next step.</td></tr>
+<tr><td><span class="pill p0">P0</span></td><td>Probable accounts</td><td>Up to 10 candidates per platform, ranked by evidence. Stores each platform's photo and bio separately. Never linked without your Confirm.</td></tr>
+<tr><td><span class="pill p0">P0</span></td><td>Backup + lock</td><td>Face ID on open. Nightly encrypted export to iCloud Drive.</td></tr>
+<tr><td><span class="pill p1">P1</span></td><td>Screenshot import</td><td>Share a screenshot from an event app and Claude vision creates a person.</td></tr>
+<tr><td><span class="pill p1">P1</span></td><td>Search</td><td>Full-text search over names, handles, transcripts, tags and events, plus event filters.</td></tr>
+<tr><td><span class="pill p1">P1</span></td><td>Nightly recap</td><td>11pm local notification listing people needing a fix and open actions.</td></tr>
+<tr><td><span class="pill p1">P1</span></td><td>My card</td><td>Your own QR for X, LinkedIn, Telegram or a combined link page.</td></tr>
+<tr><td><span class="pill p1">P1</span></td><td>Re-encounter</td><td>Scanning a known person adds a new encounter to the existing profile.</td></tr>
+<tr><td><span class="pill p1">P1</span></td><td>Spend guard</td><td>Daily USDC cap. Paid lookups show their price before running.</td></tr>
+<tr><td><span class="pill p1">P1</span></td><td>Export</td><td>CSV or JSON export, saved through the share sheet.</td></tr>
+</table></div>
+</section>
+
+<section id="rush" class="prose">
+<h2>Meeting people: what actually happens</h2>
+<h3>One-on-one (the easy case)</h3>
+<ol>
+  <li><b>Open (0–10s):</b> "Hey, what are you building?" Glance at the badge for name and company.</li>
+  <li><b>Talk (2–8 min):</b> what they do, what they need, any overlap with you.</li>
+  <li><b>Exchange (10s):</b> "Are you on Telegram?" One of you shows a QR. <b>You scan theirs</b> rather than having them scan yours, because their scan of you doesn't give Recall anything.</li>
+  <li><b>Photo (5s, optional):</b> "Quick selfie so I remember?" People in crypto often say no, so the badge photo is the fallback.</li>
+  <li><b>After you part (30–60s):</b> record the voice note while walking away. This is the step that gets skipped, so the app nags: a stub with no note gets a nudge 2 minutes later.</li>
+</ol>
+<h3>The rush (the real case)</h3>
+<p>After a talk or at a side event, 3 to 8 people crowd around and the conversation jumps between them. You can't record a note for each one, and pulling out the phone eight times is awkward. Rush mode is built for this:</p>
+<ul>
+  <li><b>Stubs first:</b> the scanner stays open and every scan makes a stub with a timestamp and a beep, with no screens in between. "+ wave" saves someone you only have a face for, so it only needs a photo.</li>
+  <li><b>Star the ones that matter:</b> one tap ★ marks a stub as important. This is the only judgement you make during the rush.</li>
+  <li><b>One note for the group:</b> after the huddle, one voice note covers everyone ("Karan's the auditor, Marco does BD…"). Claude splits it per person by matching names, companies and handles to the stubs.</li>
+  <li><b>Group photo:</b> one photo of the group. You tap faces to assign them to stubs later, at night, not in the moment.</li>
+  <li><b>When there's no time to scan:</b> take one wide photo with the badges in view. Claude reads every badge it can see and creates a stub for each.</li>
+  <li><b>Hands-free start:</b> on an iPhone 13, set up Back Tap (Settings → Accessibility → Touch → Back Tap) to run a Shortcut that opens <code>recall://note</code>. Double-tap the back of the phone in your pocket and it starts recording.</li>
+</ul>
+<h3>Letting the people who don't matter drop off</h3>
+<ul>
+  <li>A <b>stub with no star and no note</b> only gets the free lookups (X, Telegram, ENS). No paid LinkedIn or search calls. That keeps costs down automatically.</li>
+  <li>The nightly recap lists those stubs as <b>"Keep or drop?"</b> and you swipe through them in about 30 seconds.</li>
+  <li>Anything not kept after <b>72 hours</b> is archived, not deleted, so you can search for it later ("who was that person in the blue shirt?").</li>
+  <li>Stubs mentioned in a group note are promoted automatically. People you never mentioned are flagged for dropping (screen 15).</li>
+</ul>
+</section>
+
+<section id="eventapps" class="prose">
+<h2>Event apps &amp; directories</h2>
+<p>I checked on Oct 22. I couldn't find a public API or open attendee directory for any of the three events. You said IBW has a connect app, but I didn't find anything about it publicly, so it's probably only inside the ticketing app.</p>
+<div class="tbl"><table>
+<tr><th>Event</th><th>What I found</th><th>How Recall uses it</th></tr>
+<tr><td>IBW (Nov 1–2, Fairmont Mumbai)</td><td>No public info about an attendee app. The site lists speakers and 90+ side events.</td><td>Import speakers as a "want to meet" list. Import side events for auto-matching. Screenshot import for people you connect with in their app.</td></tr>
+<tr><td>Devcon (Nov 3–6, Mumbai)</td><td>No official directory found. Public ticket share pages exist at <code>devcon.org/ticket/&lt;name&gt;</code> and show only a name or ENS. A community-built tool, "Devcon Buddy", shares contact info only after both people accept.</td><td>If a badge QR contains a ticket link, take the name or ENS from it. If it's an ENS name, look up its records (free).</td></tr>
+<tr><td>ETHGlobal</td><td>No public API or directory found. Hacker profiles sit behind a login.</td><td>Scan their QR, or screenshot the profile. P2: log in inside the app to read your own ETHGlobal connections list.</td></tr>
+</table></div>
+<p><b>First thing to do at each venue:</b> scan one badge and one in-app QR, and screenshot what they decode to. That shows whether they carry useful info or only a ticket ID. If a ticket QR does lead to name and email data, that's the organiser's data. Use only what the QR itself shows; don't try to pull records from their systems.</p>
+</section>
+
+<section id="unknownqr" class="prose">
+<h2>Decoding an unknown QR</h2>
+<p>When a QR isn't a known social link, Recall works out what it contains step by step. It reads the content as text and never opens the link in a browser or wallet, because a QR at a crypto event is an easy way to phish someone.</p>
+<div class="flow"><span>Raw text</span><i>→</i><span>Recognise the format (local, free)</span><i>→</i><span>Decode it</span><i>→</i><span>If a URL: fetch the page as text</span><i>→</i><span>Claude: what is this, who is it?</span><i>→</i><span>Suggest next step</span></div>
+<div class="tbl"><table>
+<tr><th>Payload looks like</th><th>Decode locally</th><th>Then</th></tr>
+<tr><td><code>BEGIN:VCARD</code> / <code>MECARD:</code></td><td>Parse the fields</td><td>Name, email, company, then the social search</td></tr>
+<tr><td>URL</td><td>Expand short links (lnkd.in, bit.ly) by reading the redirect header only</td><td>Fetch the HTML without cookies, read og:title/description/image, Claude classifies it</td></tr>
+<tr><td><code>eyJ…</code> (JWT)</td><td>Base64-decode the payload without verifying it</td><td>Name and email fields are often inside</td></tr>
+<tr><td><code>0x…</code> address or <code>*.eth</code></td><td>ENS lookup (free RPC)</td><td>ENS text records for twitter, github and url, then the social search</td></tr>
+<tr><td>Zupass / POD / JSON</td><td>Parse the JSON</td><td>Look for name, email or event fields</td></tr>
+<tr><td>Short opaque ID</td><td>Nothing to decode</td><td>Mark as "ticket ID only" and ask for a badge photo</td></tr>
+</table></div>
+</section>
+
+<section id="identity">
+<h2>Identity resolution</h2>
+<p class="prose">The account you scanned is always the anchor. The app then looks for the same person elsewhere, using free sources first and paid ones only if needed. Every result is a suggestion with a reason until you confirm it.</p>
+<div class="flow"><span>Scan</span><i>→</i><span>Parse type</span><i>→</i><span>Fetch anchor profile</span><i>→</i><span>Extract links from bio / website (free)</span><i>→</i><span>ENS text records (free)</span><i>→</i><span>Search by name + company (paid)</span><i>→</i><span>Score + suggest</span><i>→</i><span>You confirm</span></div>
+<h3>What each QR contains</h3>
+<div class="tbl"><table>
+<tr><th>Source</th><th>QR payload</th><th>What we can get</th></tr>
+<tr><td>LinkedIn</td><td class="mono">linkedin.com/in/&lt;slug&gt;</td><td>Name, headline, company, location, photo, website. This is the best source for a real name.</td></tr>
+<tr><td>X</td><td class="mono">x.com/&lt;handle&gt;</td><td>Display name, bio, link in bio, location, avatar, user ID (needed for DM prefill)</td></tr>
+<tr><td>Telegram</td><td class="mono">t.me/&lt;username&gt;</td><td>Public <code>t.me</code> page shows display name, bio and photo. Free, no API needed.</td></tr>
+<tr><td>WhatsApp</td><td class="mono">wa.me/&lt;phone&gt; or wa.me/qr/&lt;code&gt;</td><td>A phone number at most. <code>wa.me/qr</code> codes hide the number, so store the link and open it. There's nothing to enrich.</td></tr>
+<tr><td>Event badge</td><td>vCard, a URL, or an opaque ticket ID</td><td>vCard gives name, email and company. An opaque ID gives nothing, so use the badge photo and vision. Check the real IBW and Devcon badge format on day 1.</td></tr>
+</table></div>
+<h3>Probable accounts for common names</h3>
+<p class="prose">For names like "Karan" or "Priya Sharma" there's rarely one exact hit. Recall fetches <b>up to 10 candidates per platform</b> and ranks them by evidence instead of picking one:</p>
+<div class="tbl"><table>
+<tr><th>Signal</th><th>How</th><th>Weight</th></tr>
+<tr><td>Linked from a confirmed profile</td><td>Bio, website or ENS record points to it</td><td>Strong</td></tr>
+<tr><td>Posted about this event</td><td>twitterapi.io search <code>from:&lt;handle&gt; (IBW OR Devcon OR ETHGlobal)</code> in the last 7 days</td><td>Strong</td></tr>
+<tr><td>Face matches your photo</td><td>Claude vision compares the candidate's avatar to your photo. Shown as "looks similar", never as proof.</td><td>Medium</td></tr>
+<tr><td>Same company or domain</td><td>Text match against badge or LinkedIn data</td><td>Medium</td></tr>
+<tr><td>Social overlap</td><td>Follows people you've already confirmed this week</td><td>Medium</td></tr>
+<tr><td>Crypto and India context</td><td>Bio keywords, location</td><td>Weak</td></tr>
+<tr><td>Name only</td><td>No other evidence</td><td>Weak, shown collapsed</td></tr>
+</table></div>
+<h3>Every profile keeps each platform's version</h3>
+<p class="prose">People often use a real photo on LinkedIn, a cartoon on X and a different name on Telegram. Recall stores <b>each platform's photo, display name and bio separately</b>, labelled with where it came from, and shows them side by side (screen 13). The profile shows the photo you took first, then LinkedIn's, then the others.</p>
+<h3>Confirmation rule</h3>
+<p class="prose"><b>Nothing is ever linked automatically.</b> Every handle except the one you scanned starts as <code>suggested</code> and only becomes <code>confirmed</code> when you tap it. Rejected candidates are remembered so they aren't suggested again.</p>
+</section>
+
+<section id="audit" class="prose">
+<h2>Audit: what v0.1 was missing</h2>
+<div class="tbl"><table>
+<tr><th>Gap</th><th>Why it matters</th><th>Fix</th><th>Pri</th></tr>
+<tr><td>Rush handling</td><td>Most meetings at side events are in groups</td><td>Rush mode, group note split, stubs with stars</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>No backup</td><td>A phone lost or stolen in a crowd loses everything</td><td>Nightly encrypted export to iCloud Drive or Files, plus manual export</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>No app lock</td><td>The app holds notes about people and a wallet key</td><td>Face ID on open (<code>expo-local-authentication</code>)</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>QR phishing</td><td>Crypto events are full of malicious QR codes</td><td>Unknown QRs are fetched as text only, never opened in a browser or wallet</td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>Hinglish notes</td><td>An English-only Whisper model mangles mixed Hindi and English</td><td>Use the multilingual <code>small</code> model, not <code>base.en</code></td><td><span class="pill p0">P0</span></td></tr>
+<tr><td>Duplicate people</td><td>The same person is scanned on X one day and LinkedIn the next</td><td>"Same person?" suggestion and a merge screen, confirmed by you</td><td><span class="pill p1">P1</span></td></tr>
+<tr><td>Battery</td><td>Camera, GPS and Whisper drain the phone by afternoon</td><td>Transcribe only while charging or at night. GPS once per capture.</td><td><span class="pill p1">P1</span></td></tr>
+<tr><td>Want-to-meet list</td><td>Speakers you came for get lost in the crowd</td><td>Import speakers. Scanning one flags them.</td><td><span class="pill p1">P1</span></td></tr>
+<tr><td>Intros</td><td>"Intro A to B" involves two people</td><td>An action can link two people and drafts a group message</td><td><span class="pill p1">P1</span></td></tr>
+<tr><td>Photo consent</td><td>Some people don't want photos taken</td><td>Badge photo or "no photo" are first-class options. Selfie prompt is optional.</td><td><span class="pill p1">P1</span></td></tr>
+<tr><td>Forget a person</td><td>Some people will ask</td><td>Delete removes the profile, handles, media and notes</td><td><span class="pill p1">P1</span></td></tr>
+<tr><td>Reminders</td><td>A follow-up list is easy to ignore</td><td>Local notification on the due date</td><td><span class="pill p1">P1</span></td></tr>
+<tr><td>Recording other people</td><td>Recording a conversation without consent is a trust and legal risk</td><td>Notes are only your own voice after the conversation. No ambient recording.</td><td><span class="pill p0">P0</span></td></tr>
+</table></div>
+</section>
+
+<section id="sources">
+<h2>Data sources &amp; cost</h2>
+<p class="prose">The app calls these directly from the phone. x402 endpoints are paid per call in USDC on Base from a small wallet stored in the iOS Keychain. Prices for the x402 routes were checked in agentcash's endpoint listing on Oct 22. Other prices are approximate.</p>
+<div class="tbl"><table>
+<tr><th>Need</th><th>Source</th><th>Access</th><th>Cost / call</th></tr>
+<tr><td>X profile, bio, user ID</td><td>twitterapi.io (your subscription)</td><td>API key</td><td class="num">~$0.0002</td></tr>
+<tr><td>Telegram profile</td><td>public <code>t.me/&lt;user&gt;</code> page, og: tags</td><td>plain fetch</td><td class="num free">free</td></tr>
+<tr><td>Crypto identity</td><td>ENS text records (<code>com.twitter</code>, <code>com.github</code>, <code>url</code>) via public RPC</td><td>viem</td><td class="num free">free</td></tr>
+<tr><td>GitHub</td><td>GitHub REST API</td><td>none (60 req/hr)</td><td class="num free">free</td></tr>
+<tr><td>LinkedIn profile</td><td>stablesocial <code>/api/sc/linkedin/profile</code></td><td>x402</td><td class="num">$0.06</td></tr>
+<tr><td>Name → LinkedIn URL</td><td>stableenrich <code>/api/minerva/resolve</code></td><td>x402</td><td class="num">$0.02</td></tr>
+<tr><td>Cross-platform web search</td><td>stableenrich <code>/api/exa/search</code></td><td>x402</td><td class="num">$0.01</td></tr>
+<tr><td>Voice → text</td><td><code>whisper.rn</code> on device (base / small model)</td><td>local</td><td class="num free">free</td></tr>
+<tr><td>Structuring, badge OCR, drafts</td><td>Anthropic API, Claude Haiku 5.5 (Sonnet 5.5 for the badge photo if Haiku misreads it)</td><td>API key</td><td class="num">under 1¢</td></tr>
+<tr><td>Event list</td><td>Hand-made JSON plus pasted Luma links (parse the public page)</td><td>local</td><td class="num free">free</td></tr>
+</table></div>
+<div class="callout"><strong>Budget:</strong> the free sources cover X, Telegram, ENS and GitHub. A full LinkedIn lookup with a search costs about $0.08 per person. 150 people is about $12, so a $20 USDC wallet covers the whole week with room to spare.</div>
+</section>
+
+<section id="stack">
+<h2>Tech stack</h2>
+<div class="tbl"><table>
+<tr><th>Layer</th><th>Choice</th><th>Why</th></tr>
+<tr><td>App shell</td><td>Expo (React Native) with a <b>dev build</b> (<code>expo-dev-client</code>) and Expo Router</td><td>Needed because whisper.rn is a native module that Expo Go can't load. Install with <code>npx expo run:ios --device</code>.</td></tr>
+<tr><td>Scanner</td><td><code>expo-camera</code> barcode scanning</td><td>Built in, handles QR codes, no extra library.</td></tr>
+<tr><td>Photo / audio</td><td><code>expo-camera</code>, <code>expo-audio</code></td><td>Recording in the background needs the audio background mode in <code>app.json</code>.</td></tr>
+<tr><td>Location</td><td><code>expo-location</code></td><td>One foreground reading per capture, no background tracking.</td></tr>
+<tr><td>Storage</td><td><code>expo-sqlite</code> with FTS5, files in <code>expo-file-system</code></td><td>Local-first, and FTS5 gives transcript search for free.</td></tr>
+<tr><td>Secrets</td><td><code>expo-secure-store</code></td><td>API keys and the wallet private key, stored in the Keychain.</td></tr>
+<tr><td>Payments</td><td><code>viem</code> local account with an x402 fetch wrapper (<code>@x402/fetch</code>)</td><td>Pays automatically on a 402 response. A daily cap check runs before each call.</td></tr>
+<tr><td>Transcription</td><td><code>whisper.rn</code>, multilingual ggml small (handles Hinglish)</td><td>Free and works offline. An iPhone 13 transcribes a 1-minute note in a few seconds.</td></tr>
+<tr><td>AI</td><td>Direct <code>fetch</code> to the Anthropic Messages API with a JSON schema in the tool definition</td><td>Structured output without a backend. A key in the app is fine because only you use it.</td></tr>
+<tr><td>Notifications</td><td><code>expo-notifications</code> (local only)</td><td>Nightly recap and due-date reminders.</td></tr>
+</table></div>
+<h3>Job queue</h3>
+<p class="prose">Every capture writes rows first and queues jobs in a <code>jobs</code> table: <code>enrich_anchor</code>, <code>find_related</code>, <code>transcribe</code>, <code>structure</code>. A single worker runs them when the app is in the foreground and online, retrying with backoff. That's enough. No background fetch or push is needed.</p>
+<h3>AI output schema</h3>
+<pre>{
+  "person":   { "name": "", "role": "", "company": "", "what_they_do": "" },
+  "topics":   ["..."],
+  "they_need": ["..."],  "can_help_me_with": ["..."],
+  "actions":  [{ "text": "", "owner": "me|them", "due": "YYYY-MM-DD|null", "channel": "telegram|x|linkedin|whatsapp|email" }],
+  "tags":     ["zk", "founder"],
+  "draft_followup": ""
+}</pre>
+</section>
+
+<section id="social" class="prose">
+<h2>Your accounts</h2>
+<p>You asked for the app to connect to your social accounts. I recommend <b>not using OAuth</b> and using deep links plus your own handles instead:</p>
+<ul>
+  <li><b>X:</b> the follow and DM APIs are paid write access, and twitterapi.io writes need your login cookie, which risks your account. Deep links cost nothing: <code>x.com/intent/follow?screen_name=</code> and <code>x.com/messages/compose?recipient_id=&amp;text=</code>, which prefills the message.</li>
+  <li><b>LinkedIn:</b> no public API allows connection requests or messages. Open the profile with <code>linkedin://</code> and copy the drafted text to the clipboard.</li>
+  <li><b>Telegram:</b> no user OAuth for DMs. Use <code>tg://resolve?domain=&lt;user&gt;</code> to open the chat, with the draft on the clipboard.</li>
+  <li><b>WhatsApp:</b> <code>whatsapp://send?phone=&amp;text=</code> prefills the message when you have the number.</li>
+</ul>
+<p>"Connecting your accounts" then means entering your own handles once in Settings. That gives you the My card QR and lets drafts mention the right links.</p>
+</section>
+
+<section id="data">
+<h2>Data model</h2>
+<pre>person     (id, display_name, real_name, photo_uri, summary, created_at)
+handle     (id, person_id, platform, value, url, status: anchor|confirmed|suggested|rejected,
+            confidence, evidence_json, display_name, bio, avatar_uri, raw_json)
+huddle     (id, event_id, started_at, ended_at, photo_uri, audio_uri, transcript)
+stub       (id, huddle_id, person_id, raw_qr, starred, kept: null|true|false)
+event      (id, name, starts_at, ends_at, lat, lng, radius_m, source)
+encounter  (id, person_id, event_id, at, lat, lng, photo_uri, audio_uri, transcript, ai_json)
+action     (id, person_id, encounter_id, text, owner, due, channel, draft, done_at)
+job        (id, kind, ref_id, status, tries, next_at, error)
+spend      (id, endpoint, usd, at)          -- enforces the daily cap
+encounter_fts  (FTS5 over transcript, ai_json, display_name, handles)</pre>
+</section>
+
+<section id="plan">
+<h2>Build plan</h2>
+<p class="prose">IBW starts Nov 1, which is 9 days away. Each day below ends with something you can use on your iPhone.</p>
+<div class="tbl"><table>
+<tr><th>Days</th><th>Ship</th></tr>
+<tr><td class="num">Oct 23–24</td><td>Expo dev build on your iPhone 13. SQLite schema. Capture screen with photo, voice, GPS and auto event match. Hand-made event JSON.</td></tr>
+<tr><td class="num">Oct 25–26</td><td>Scanner with URL and vCard parsing. Anchor fetch for X (twitterapi.io) and Telegram (t.me). Identity screen with deep-link Follow buttons.</td></tr>
+<tr><td class="num">Oct 27</td><td>whisper.rn transcription, then Claude structuring and the review screen. Badge-photo vision fallback. Unknown QR decoder.</td></tr>
+<tr><td class="num">Oct 28</td><td>Rush mode: stubs, stars, group note split. Face ID lock and nightly backup.</td></tr>
+<tr><td class="num">Oct 29</td><td>x402 wallet and spend cap. Probable-accounts list with evidence ranking. Compare and confirm screen.</td></tr>
+<tr><td class="num">Oct 30</td><td>Follow-ups list with drafts and open-in-app. Person timeline. Screenshot import.</td></tr>
+<tr><td class="num">Oct 31</td><td>Field test with 10 friends in a group, on a bad network. Nightly recap with keep-or-drop. Fix bugs.</td></tr>
+</table></div>
+<p class="prose"><b>Cut first if behind:</b> My card, search (a plain list works for a week), screenshot import, face matching, the social-overlap signal. <b>Never cut:</b> rush mode, offline queue, backup.</p>
+</section>
+
+<section id="risks" class="prose">
+<h2>Risks &amp; open questions</h2>
+<ul>
+  <li><b>7-day signing:</b> with a free Apple ID the app stops opening after 7 days, and the week of events is longer than that. Either pay for the Apple Developer Program ($99/yr) or plan to reinstall from your Mac around Nov 6. Turn on Developer Mode on the iPhone before Oct 23.</li>
+  <li><b>Badge format unknown:</b> if IBW and Devcon badges only carry ticket IDs, the badge photo plus vision is the main path. Test this on day 1.</li>
+  <li><b>Wallet on the phone:</b> keep it small ($20) with a daily cap. It's a hot wallet in the Keychain.</li>
+  <li><b>Other people's data:</b> keep it on the device, only fetch public profiles, and don't use phone or address lookups (Whitepages, PDL contact data). LinkedIn data from third-party scrapers is a grey area under LinkedIn's terms, so use it only for your own notes.</li>
+  <li><b>Mumbai venues:</b> expect weak signal indoors. The offline queue is a P0 requirement for this reason.</li>
+  <li><b>Wrong matches:</b> a confident false match is worse than none. That's why suggestions are never linked automatically and low-confidence matches stay collapsed.</li>
+</ul>
+</section>
+</div>
