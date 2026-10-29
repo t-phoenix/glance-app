@@ -10,8 +10,11 @@ const QUERY_ID = 'voyagerSearchDashClusters.b0928897b71bd00a5a7291755dcd64f0';
 const RESULT_LIMIT = 20;
 
 export function isLinkedInProfilePhoto(url: string | null): boolean {
-  if (!url) return false;
-  return /profile-displayphoto|profile-framedphoto/i.test(url) && !/company-logo|background_|feedshare|ghost-img/i.test(url);
+  if (!url || !/^https:\/\//i.test(url)) return false;
+  if (/ghost-img|company-logo|background_|feedshare|static\.licdn\.com\/aero|organization-logo|default-avatar/i.test(url)) return false;
+  if (/profile-displayphoto|profile-framedphoto/i.test(url)) return true;
+  // Current profile responses put the face id in the path and the size in the artifact, with no displayphoto name.
+  return /media\.licdn\.com\/dms\/image\/(?:v2\/)?[A-Za-z0-9]+03AQ/i.test(url) && /(?:100_100|200_200|400_400|800_800)/.test(url);
 }
 
 export function linkedinPeopleSearchUrl(query: string): string {
@@ -66,17 +69,25 @@ function builtPhoto(root: string, segment: string): string | null {
   return usablePhoto(`${base}${segment.replace(/^\//, '')}`);
 }
 
+function completePhoto(url: string | null): url is string {
+  return Boolean(url && isLinkedInProfilePhoto(url) && /(?:100_100|200_200|400_400|800_800|shrink_100|shrink_200|shrink_400|shrink_800)/.test(url));
+}
+
 /** Profile photo only. Company logos and the next card's image are ignored. */
 export function linkedinPhotoFromText(raw: string): string | null {
-  const roots = [...raw.matchAll(/"rootUrl":"(https:[^"]+)"/g)].map((match) => match[1] ?? '');
-  const segments = [...raw.matchAll(/"fileIdentifyingUrlPathSegment":"([^"]+)"/g)].map((match) => match[1] ?? '').filter(Boolean);
-  const built = roots.flatMap((root) => segments.map((segment) => builtPhoto(root, segment))).filter((url): url is string => isLinkedInProfilePhoto(url));
-  const sized = pickLinkedInPhoto(built);
-  if (sized) return sized;
   const direct = [...raw.matchAll(/https:\/\/media\.licdn\.com\/dms\/image\/[^"\\\s<]+/g)]
     .map((match) => usablePhoto(match[0] ?? null))
-    .filter((url): url is string => isLinkedInProfilePhoto(url));
-  return pickLinkedInPhoto(direct);
+    .filter(completePhoto);
+  const signed = pickLinkedInPhoto(direct);
+  if (signed) return signed;
+  const roots = [...raw.matchAll(/"rootUrl":"(https:[^"]+)"/g)].map((match) => ({ index: match.index ?? 0, root: match[1] ?? '' }));
+  const built = [...raw.matchAll(/"fileIdentifyingUrlPathSegment":"([^"]+)"/g)].flatMap((match) => {
+    const root = [...roots].reverse().find((item) => item.index < (match.index ?? 0));
+    if (!root) return [];
+    const url = builtPhoto(root.root, match[1] ?? '');
+    return url && isLinkedInProfilePhoto(url) ? [url] : [];
+  });
+  return pickLinkedInPhoto(built);
 }
 
 /** Use a size LinkedIn actually signed. Never invent a different shrink size. */
@@ -193,7 +204,12 @@ export function linkedinExtractScript(query: string): string {
     }
     function profilePhoto(node) {
       var raw = JSON.stringify((node && (node.profilePicture || node.image)) || {});
-      function good(url) { return /profile-displayphoto|profile-framedphoto/i.test(url) && !/company-logo|feedshare|ghost-img/i.test(url); }
+      function good(url) {
+        if (!url || !/^https:\\/\\//i.test(url)) return false;
+        if (/ghost-img|company-logo|background_|feedshare|static\\.licdn\\.com\\/aero|organization-logo|default-avatar/i.test(url)) return false;
+        if (/profile-displayphoto|profile-framedphoto/i.test(url)) return true;
+        return /media\\.licdn\\.com\\/dms\\/image\\/(?:v2\\/)?[A-Za-z0-9]+03AQ/i.test(url) && /(?:100_100|200_200|400_400|800_800)/.test(url);
+      }
       function pick(list) {
         return list.find(function (url) { return good(url) && /200_200|shrink_200/.test(url); })
           || list.find(function (url) { return good(url) && /400_400|shrink_400/.test(url); })
@@ -276,6 +292,62 @@ export function linkedinExtractScript(query: string): string {
     }).catch(function (error) {
       if (!current() || (error && error.name === 'AbortError')) return;
       send({ query: token, status: 0 });
+    });
+    return true;
+  })(); true;`;
+}
+
+/** Reads one signed-in LinkedIn profile. The header portrait is the viewer, so this never collects page images. */
+export function linkedinProfileScript(slug: string): string {
+  const id = JSON.stringify(slug);
+  return `(function () {
+    function send(payload) {
+      if (window.ReactNativeWebView) window.ReactNativeWebView.postMessage(JSON.stringify(payload));
+    }
+    var here = location.href || '';
+    var title = document.title || '';
+    if (/\\/(login|uas\\/login|checkpoint|authwall)/i.test(here) || /sign up \\| linkedin|join linkedin|authwall/i.test(title)) {
+      send({ slug: ${id}, login: true });
+      return true;
+    }
+    var slug = ${id};
+    var csrf = (document.cookie.match(/JSESSIONID="?(ajax:[^";]+)"?/) || [])[1] || '';
+    var headers = { accept: 'application/vnd.linkedin.normalized+json+2.1', 'csrf-token': csrf, 'x-restli-protocol-version': '2.0.0' };
+    function get(path) {
+      if (!csrf) return Promise.resolve({ login: false, data: null });
+      return fetch(path, { credentials: 'include', headers: headers }).then(function (response) {
+        if (response.status === 401 || response.status === 403) return { login: true, data: null };
+        return response.text().then(function (text) {
+          try { return { login: false, data: JSON.parse(text) }; } catch (error) { return { login: false, data: null }; }
+        });
+      }).catch(function () { return { login: false, data: null }; });
+    }
+    Promise.all([
+      get('/voyager/api/identity/dash/profiles?q=memberIdentity&memberIdentity=' + encodeURIComponent(slug)),
+      get('/voyager/api/identity/profiles/' + encodeURIComponent(slug)),
+      get('/voyager/api/identity/profiles/' + encodeURIComponent(slug) + '/profileContactInfo'),
+      get('/voyager/api/identity/profiles/' + encodeURIComponent(slug) + '/profileView')
+    ]).then(function (rows) {
+      var payloads = rows.map(function (row) { return row.data; }).filter(Boolean);
+      if (!payloads.length && rows.some(function (row) { return row.login; })) {
+        send({ slug: slug, login: true });
+        return;
+      }
+      var faces = [];
+      var imgs = document.querySelectorAll('img');
+      for (var i = 0; i < imgs.length && faces.length < 12; i++) {
+        var img = imgs[i];
+        if (img.closest && img.closest('#global-nav, nav')) continue;
+        var src = img.currentSrc || img.src || img.getAttribute('src') || '';
+        if (/media\\.licdn\\.com\\/dms\\/image/i.test(src)) faces.push(src);
+      }
+      send({
+        slug: slug,
+        login: false,
+        payloads: payloads,
+        faces: faces,
+        html: document.documentElement ? document.documentElement.innerHTML.slice(0, 180000) : ''
+      });
     });
     return true;
   })(); true;`;

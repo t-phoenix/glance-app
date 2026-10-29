@@ -1,6 +1,7 @@
 import type { Platform } from '@/src/parsers/handles';
 import { validateHandle } from '@/src/parsers/handles';
 import { fetchPublicProfile, handlesInText, type PublicProfile } from '@/src/services/profiles';
+import { dossierSearchText, scoreWithDossier, type ProfileDossier } from '@/src/services/profileDossier';
 import { profileUrl } from '@/src/services/followupLinks';
 
 export interface AccountHit {
@@ -169,7 +170,7 @@ export async function githubUsersByName(query: string): Promise<AccountHit[]> {
 }
 
 /** Look up the same person on the other public profiles Glance can read. Nothing is confirmed. */
-export async function discoverAccounts(platform: string, value: string, twitterKey?: string, knownName?: string): Promise<DiscoverResult> {
+export async function discoverAccounts(platform: string, value: string, twitterKey?: string, knownName?: string, dossier?: ProfileDossier | null): Promise<DiscoverResult> {
   const hits: AccountHit[] = [];
   const seen = new Set<string>([`${platform}:${value.toLowerCase()}`]);
   let anchorName: string | null = null;
@@ -180,9 +181,26 @@ export async function discoverAccounts(platform: string, value: string, twitterK
   } catch {
     profile = null;
   }
+  if (dossier && !anchorName) anchorName = dossier.name;
+  if (dossier && !anchorBio) anchorBio = dossier.about || dossier.headline;
+  if (dossier) {
+    for (const found of handlesInText(dossierSearchText(dossier))) {
+      if (found.platform === platform && found.value.toLowerCase() === value.toLowerCase()) continue;
+      add(hits, seen, {
+        platform: found.platform as Platform,
+        value: found.value,
+        url: profileUrl(found.platform, found.value),
+        displayName: null,
+        bio: null,
+        confidence: 'high',
+        score: 92,
+        evidence: 'Linked from their profile. Confirm it is the same person.',
+      });
+    }
+  }
   if (usable(profile)) {
-    anchorName = profile.displayName;
-    anchorBio = profile.bio;
+    anchorName = profile.displayName || anchorName;
+    anchorBio = profile.bio || anchorBio;
     for (const found of handlesInText(`${profile.bio ?? ''}\n${profile.raw}`)) {
       if (found.platform === platform && found.value.toLowerCase() === value.toLowerCase()) continue;
       add(hits, seen, {
@@ -242,13 +260,17 @@ export async function discoverAccounts(platform: string, value: string, twitterK
     if (other === 'github') await addLinksFromText(hits, seen, await githubLinks(checked.value), `the GitHub profile ${checked.value}`);
   }
   if (platform === 'github') await addLinksFromText(hits, seen, await githubLinks(value), 'their GitHub profile');
-  await addPublishedContacts(hits, seen, `${anchorBio ?? ''}`);
+  await addPublishedContacts(hits, seen, `${anchorBio ?? ''}\n${dossier ? dossierSearchText(dossier) : ''}`);
   if (!anchorName && knownName && knownName !== 'Unknown' && !knownName.startsWith('@')) anchorName = knownName;
   if (anchorName && platform !== 'x' && twitterKey) {
     for (const hit of await xUsersByName(anchorName, twitterKey)) add(hits, seen, hit);
   }
   if (anchorName) await addNameMatches(hits, seen, anchorName, handle, twitterKey);
-  return { hits: topPerPlatform(hits), anchorName, anchorBio };
+  const ranked = hits.map((hit) => {
+    const next = scoreWithDossier(hit, dossier ?? null);
+    return { ...hit, score: next.score, evidence: next.evidence };
+  });
+  return { hits: topPerPlatform(ranked), anchorName, anchorBio };
 }
 
 function topPerPlatform(hits: AccountHit[]): AccountHit[] {

@@ -52,6 +52,7 @@ export interface HandleRow {
   typed_json: string | null;
   source_provider: string | null;
   fetched_at: string | null;
+  raw_json: string | null;
   confirmed_at: string | null;
 }
 
@@ -420,11 +421,11 @@ export class RecallRepository {
     this.reindex(personId);
   }
 
-  updateHandle(id: string, patch: { status?: string; displayName?: string | null; bio?: string | null; avatarUri?: string | null; followers?: number | null; source?: string | null; url?: string | null; score?: number | null; confidence?: string | null }): void {
+  updateHandle(id: string, patch: { status?: string; displayName?: string | null; bio?: string | null; avatarUri?: string | null; followers?: number | null; source?: string | null; url?: string | null; score?: number | null; confidence?: string | null; profile?: string | null }): void {
     const current = this.db.get<HandleRow>('SELECT * FROM handle WHERE id = ?', [id]);
     if (!current) return;
     this.db.run(
-      `UPDATE handle SET status = ?, display_name = ?, bio = ?, avatar_uri = ?, followers = ?, source_provider = ?, fetched_at = ?, url = ?, score = ?, confidence = ? WHERE id = ?`,
+      `UPDATE handle SET status = ?, display_name = ?, bio = ?, avatar_uri = ?, followers = ?, source_provider = ?, fetched_at = ?, url = ?, score = ?, confidence = ?, raw_json = ? WHERE id = ?`,
       [
         patch.status?.trim() || current.status,
         patch.displayName === undefined ? current.display_name : keepText(patch.displayName, current.display_name),
@@ -436,6 +437,7 @@ export class RecallRepository {
         patch.url === undefined ? current.url : keepText(patch.url, current.url),
         patch.score == null ? current.score : patch.score,
         patch.confidence === undefined ? current.confidence : keepText(patch.confidence, current.confidence),
+        patch.profile === undefined ? current.raw_json : keepText(patch.profile, current.raw_json),
         id,
       ],
     );
@@ -788,6 +790,8 @@ export class RecallRepository {
     const cols = this.db.all<{ name: string }>('PRAGMA table_info(encounter)');
     if (!cols.some((col) => col.name === 'tag')) this.db.exec('ALTER TABLE encounter ADD COLUMN tag TEXT');
     if (!cols.some((col) => col.name === 'photos_json')) this.db.exec('ALTER TABLE encounter ADD COLUMN photos_json TEXT');
+    const handleCols = this.db.all<{ name: string }>('PRAGMA table_info(handle)');
+    if (!handleCols.some((col) => col.name === 'raw_json')) this.db.exec('ALTER TABLE handle ADD COLUMN raw_json TEXT');
   }
 
   encounterPhotos(id: string): string[] {

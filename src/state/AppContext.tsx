@@ -6,6 +6,7 @@ import { RecallRepository } from '@/src/db/repository';
 import { eventSeeds } from '@/src/data/seedEvents';
 import { tickJobs } from '@/src/services/engine';
 import { getSecret, SECRET, setSecret } from '@/src/services/secrets';
+import { consumePortFile, sendDevPort } from '@/src/services/portDevData';
 import { checkPassword, hashPassword, isLocking, lockoutMs, type LockConfig } from '@/src/services/appLock';
 import { createId } from '@/src/lib/id';
 import { dark, light, type Theme } from '@/src/ui/theme';
@@ -64,19 +65,33 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const misses = useRef({ count: 0, until: 0 });
 
   useEffect(() => {
-    const database = openExpoDb();
-    const next = new RecallRepository(database);
-    next.seedEvents(eventSeeds());
-    if (!next.setting('daily_cap')) next.setSetting('daily_cap', '2');
-    const stored = next.setting('theme', 'dark');
-    if (stored === 'light' || stored === 'dark') setThemeName(stored);
-    // Face ID stays on by default, as before this setting existed
-    lockRef.current = getSecret(SECRET.appPassword).then((password) => {
-      const config = { face: next.setting('lock_face', '1') !== '0', passcode: Boolean(password) };
-      setLock(config);
-      return config;
-    });
-    setRepo(next);
+    let cancelled = false;
+    void (async () => {
+      const database = openExpoDb();
+      const next = new RecallRepository(database);
+      try {
+        const ported = await consumePortFile(next);
+        if (ported && !cancelled) setToast('Brought over your Expo Go data.');
+      } catch {
+        next.logError('port', 'Could not read the Expo Go copy.');
+      }
+      if (cancelled) return;
+      void sendDevPort(next).catch(() => undefined);
+      next.seedEvents(eventSeeds());
+      if (!next.setting('daily_cap')) next.setSetting('daily_cap', '2');
+      const stored = next.setting('theme', 'dark');
+      if (stored === 'light' || stored === 'dark') setThemeName(stored);
+      // Face ID stays on by default, as before this setting existed
+      lockRef.current = getSecret(SECRET.appPassword).then((password) => {
+        const config = { face: next.setting('lock_face', '1') !== '0', passcode: Boolean(password) };
+        setLock(config);
+        return config;
+      });
+      setRepo(next);
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {

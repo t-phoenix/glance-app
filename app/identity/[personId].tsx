@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import * as Linking from 'expo-linking';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useApp } from '@/src/state/AppContext';
 import { AiConfirm } from '@/src/ui/AiConfirm';
 import { ActionBar, Avatar, Button, Card, Field, Icon, Label, MONO, PlatformMark, Screen, platformName } from '@/src/ui/components';
@@ -9,6 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AccountRegistry } from '@/src/ui/AccountRegistry';
 import { LinkedInDirectory } from '@/src/ui/LinkedInDirectory';
 import { primaryProfilePhoto } from '@/src/services/primaryAccount';
+import { matchBrief, parseDossier } from '@/src/services/profileDossier';
 import { scoreAccountMatches } from '@/src/services/anthropic';
 import { discoverAccounts, githubUsersByName } from '@/src/services/discover';
 import { searchAccounts } from '@/src/services/accountSearch';
@@ -75,7 +76,8 @@ export default function IdentityScreen() {
     try {
       const twitter = (await getSecret(SECRET.twitter)) ?? undefined;
       const known = savedName(person?.display_name || primary.display_name, primary.value);
-      const found = await discoverAccounts(primary.platform, primary.value, twitter, known || undefined);
+      const dossier = parseDossier(primary.raw_json);
+      const found = await discoverAccounts(primary.platform, primary.value, twitter, known || undefined, dossier);
       if (known) {
         setDraft((current) => ({
           ...current,
@@ -88,7 +90,7 @@ export default function IdentityScreen() {
         if (key) {
           const scores = await scoreAccountMatches(
             key,
-            `Primary ${primary.platform} ${primary.value}. Name: ${person?.display_name ?? ''}. Bio: ${person?.summary ?? primary.bio ?? ''}`,
+            matchBrief({ platform: primary.platform, value: primary.value, name: person?.display_name || primary.display_name, dossier: parseDossier(primary.raw_json) }),
             found.hits,
           );
           for (const hit of found.hits) {
@@ -208,7 +210,7 @@ export default function IdentityScreen() {
     });
   }
 
-  function saveChoices() {
+  function finish(requirePick: boolean) {
     if (!repo) return;
     let linked = 0;
     for (const id of Object.values(chosen)) {
@@ -216,8 +218,13 @@ export default function IdentityScreen() {
       if (result.ok) linked += 1;
       else showToast(`One account is already linked to ${result.otherName}.`);
     }
+    if (requirePick && linked === 0) {
+      showToast('Choose an account first.');
+      return;
+    }
     bump();
-    showToast(linked ? `Connected ${linked}.` : 'Choose an account first.');
+    if (linked) showToast(`Connected ${linked}.`);
+    router.replace({ pathname: '/person/[id]', params: { id: personId } });
   }
 
   return (
@@ -306,7 +313,8 @@ export default function IdentityScreen() {
         })}
       </ScrollView>
       <ActionBar theme={theme} bottom={Math.max(16, insets.bottom)}>
-        <Button theme={theme} icon="checkmark" label={busy ? 'Saving' : `Save ${Object.keys(chosen).length || ''} account${Object.keys(chosen).length === 1 ? '' : 's'}`.replace('  ', ' ')} disabled={busy} onPress={() => { if (!busy) saveChoices(); }} style={{ flex: 1 }} />
+        <Button theme={theme} kind="secondary" label="Complete" onPress={() => { if (!busy) finish(false); }} style={{ flex: 1 }} />
+        <Button theme={theme} icon="checkmark" label={busy ? 'Saving' : `Save ${Object.keys(chosen).length || ''} account${Object.keys(chosen).length === 1 ? '' : 's'}`.replace('  ', ' ')} disabled={busy} onPress={() => { if (!busy) finish(true); }} style={{ flex: 1 }} />
       </ActionBar>
       <AiConfirm
         theme={theme}

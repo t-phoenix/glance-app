@@ -23,8 +23,10 @@ function Root() {
     <>
       <StatusBar style={themeName === 'dark' ? 'light' : 'dark'} />
       <Stack screenOptions={{ headerStyle: { backgroundColor: theme.bg }, headerTintColor: theme.link, headerTitleStyle: { color: theme.text, fontFamily: DISPLAY, fontSize: 18 }, headerShadowVisible: false, headerBackButtonDisplayMode: 'minimal', contentStyle: { backgroundColor: theme.bg } }}>
+        <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="scan" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
+        <Stack.Screen name="profile-confirm" options={{ title: 'Confirm', headerBackVisible: false }} />
         <Stack.Screen name="capture/[personId]" options={{ title: 'Note' }} />
         <Stack.Screen name="review/[encounterId]" options={{ title: 'Review' }} />
         <Stack.Screen name="person/[id]" options={{ title: 'Person' }} />

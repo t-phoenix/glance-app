@@ -2,6 +2,7 @@ import type { RecallRepository } from '@/src/db/repository';
 import type { Platform } from '@/src/parsers/handles';
 import { anchorFromQr } from '@/src/parsers/qr';
 import { profileUrl } from '@/src/services/followupLinks';
+import { parseDossier, preferDossier, serializeDossier, type ProfileDossier } from '@/src/services/profileDossier';
 import { fetchPublicProfile } from '@/src/services/profiles';
 import { resolveQr } from '@/src/services/qrResolve';
 
@@ -71,6 +72,30 @@ export async function fillPrimaryAccount(
     source: profile?.raw || (face ? 'search' : 'profile'),
   });
   return Boolean(profile?.displayName || known?.displayName || profile?.bio || known?.bio || face);
+}
+
+/** Save the X or LinkedIn dossier on the anchor and copy the compact fields onto the person. */
+export function applyDossier(repo: RecallRepository, personId: string, next: ProfileDossier): void {
+  const handle = repo.handles(personId).find((row) => row.platform === next.platform && row.value.toLowerCase() === next.value.toLowerCase());
+  const dossier = preferDossier(parseDossier(handle?.raw_json), next);
+  if (!dossier) return;
+  repo.updatePerson(personId, {
+    display_name: dossier.name || undefined,
+    real_name: dossier.name || undefined,
+    summary: dossier.about || undefined,
+    photo_uri: dossier.photo || undefined,
+    company: dossier.company || undefined,
+    role: dossier.headline || undefined,
+  });
+  if (!handle) return;
+  repo.updateHandle(handle.id, {
+    displayName: dossier.name || undefined,
+    bio: dossier.about || dossier.headline || undefined,
+    avatarUri: dossier.photo || undefined,
+    url: profileUrl(dossier.platform, dossier.value),
+    source: dossier.platform === 'linkedin' ? 'linkedin-profile' : 'x-profile',
+    profile: serializeDossier(dossier),
+  });
 }
 
 /** A saved page link is not the account. Follow it once and replace the anchor. */

@@ -1,17 +1,21 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Keyboard, Linking, Platform as Device, Pressable, ScrollView, Text, View, useWindowDimensions } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as Haptics from 'expo-haptics';
 import * as Location from 'expo-location';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useApp } from '@/src/state/AppContext';
 import { Avatar, Button, Field, Icon, PlatformMark, platformName } from '@/src/ui/components';
 import { validatePersonName } from '@/src/parsers/handles';
 import { geoLabel, presetForEventName } from '@/src/data/weekTags';
 import { matchEvents } from '@/src/services/eventMatcher';
-import { anchorFromQr } from '@/src/parsers/qr';
-import { fillPrimaryAccount, isPrimaryPlatform } from '@/src/services/primaryAccount';
+import { anchorFromQr, classifyQr } from '@/src/parsers/qr';
+import { accountFromScan, stageConfirm } from '@/src/services/confirmRoute';
+import { applyDossier, fillPrimaryAccount, isPrimaryPlatform } from '@/src/services/primaryAccount';
+import { fetchXDossier } from '@/src/services/profiles';
+import { profileReady } from '@/src/services/profileDossier';
+import { LinkedInProfileFetch } from '@/src/ui/LinkedInProfileFetch';
 import { getSecret, SECRET } from '@/src/services/secrets';
 import { resolveQr } from '@/src/services/qrResolve';
 import { searchAccounts, type AccountCard } from '@/src/services/accountSearch';
@@ -39,6 +43,8 @@ export default function ScanScreen() {
   const [picked, setPicked] = useState<AccountCard | null>(null);
   const [directoryQuery, setDirectoryQuery] = useState('');
   const busy = useRef(false);
+  const recent = useRef('');
+  const [held, setHeld] = useState(false);
   const searchGen = useRef(0);
   const huddle = typeof params.huddle === 'string' ? params.huddle : undefined;
   void revision;
@@ -48,19 +54,54 @@ export default function ScanScreen() {
   const boxLeft = (windowWidth - box) / 2;
   const dim = 'rgba(5, 9, 11, 0.62)';
 
-  async function saveRaw(raw: string) {
-    if (!repo || busy.current) return;
+  async function saveRaw(raw: string, fromList?: AccountCard) {
+    if (!repo || busy.current || raw === recent.current) return;
     busy.current = true;
+    setHeld(true);
     setStatus('Reading the link…');
     let stay = true;
     try {
-      const qr = await resolveQr(raw);
+      const direct = accountFromScan(raw);
+      const qr = direct ? classifyQr(direct.url) : await resolveQr(raw.trim());
       if (qr.unsafe) {
         showToast("This QR is a payment or wallet link. Glance won't open it.");
         return;
       }
       if (qr.kind === 'invalid') {
         showToast('That code could not be read.');
+        return;
+      }
+      const resolved = anchorFromQr(qr);
+      const preview = direct ?? (resolved && (resolved.platform === 'x' || resolved.platform === 'linkedin') ? resolved : null);
+      if (!huddle && preview && (preview.platform === 'x' || preview.platform === 'linkedin')) {
+        const card = fromList ?? (picked && raw === picked.url ? picked : null);
+        const nonce = String(Date.now());
+        stay = false;
+        stageConfirm({
+          platform: preview.platform,
+          value: preview.value,
+          url: preview.url || card?.url || '',
+          name: card?.displayName || '',
+          company: card ? company : '',
+          hint: card ? hint : '',
+          photo: card?.avatarUrl || '',
+          bio: card?.bio || '',
+          nonce,
+        });
+        router.replace({
+          pathname: '/profile-confirm',
+          params: {
+            platform: preview.platform,
+            value: preview.value,
+            url: preview.url || card?.url || '',
+            name: card?.displayName || '',
+            company: card ? company : '',
+            hint: card ? hint : '',
+            photo: card?.avatarUrl || '',
+            bio: card?.bio || '',
+            nonce,
+          },
+        });
         return;
       }
       let lat: number | null = null;
@@ -112,6 +153,16 @@ export default function ScanScreen() {
         setStatus('Saving the public profile…');
         const twitter = (await getSecret(SECRET.twitter)) ?? undefined;
         filled = await fillPrimaryAccount(repo, saved.personId, anchor.platform, anchor.value, anchor.url, twitter, name || card?.displayName || undefined, card ? { avatarUrl: card.avatarUrl, bio: card.bio, displayName: card.displayName } : undefined);
+        if (huddle && anchor.platform === 'x') {
+          const personId = saved.personId;
+          void fetchXDossier(anchor.value, twitter).then((dossier) => {
+            if (dossier && profileReady(dossier)) {
+              applyDossier(repo, personId, dossier);
+              bump();
+            }
+          }).catch(() => undefined);
+        }
+        if (huddle && anchor.platform === 'linkedin') setPendingLinkedIn({ personId: saved.personId, value: anchor.value });
       }
       bump();
       void Haptics.notificationAsync(saved.duplicate ? Haptics.NotificationFeedbackType.Warning : Haptics.NotificationFeedbackType.Success);
@@ -124,7 +175,11 @@ export default function ScanScreen() {
       } else {
         showToast(offline ? `Saved offline · ${saved.label}` : `Saved · ${saved.label} · ${place}`);
       }
-      if (huddle) return;
+      if (huddle) {
+        recent.current = raw;
+        setTimeout(() => { if (recent.current === raw) recent.current = ''; }, 2500);
+        return;
+      }
       stay = false;
       router.replace({ pathname: '/capture/[personId]', params: { personId: saved.personId, encounter: saved.encounterId, tag: tag ?? '' } });
     } catch {
@@ -132,10 +187,22 @@ export default function ScanScreen() {
     } finally {
       if (stay) {
         busy.current = false;
+        setHeld(false);
         setStatus('Point at a profile QR');
       }
     }
   }
+
+  useFocusEffect(useCallback(() => {
+    busy.current = false;
+    recent.current = '';
+    setHeld(false);
+    setStatus('Point at a profile QR');
+    return () => {
+      busy.current = true;
+      setHeld(true);
+    };
+  }, []));
 
   useEffect(() => {
     const showEvent = Device.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
@@ -182,6 +249,7 @@ export default function ScanScreen() {
     return () => clearTimeout(timer);
   }, [manual, handle, platform]);
 
+  const [pendingLinkedIn, setPendingLinkedIn] = useState<{ personId: string; value: string } | null>(null);
   const consumed = useRef(false);
   useEffect(() => {
     if (consumed.current || !repo || typeof params.payload !== 'string') return;
@@ -191,12 +259,25 @@ export default function ScanScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.bg }}>
+      {pendingLinkedIn ? (
+        <LinkedInProfileFetch
+          quiet
+          theme={theme}
+          slug={pendingLinkedIn.value}
+          onDossier={(dossier) => {
+            if (!repo || !profileReady(dossier)) return;
+            applyDossier(repo, pendingLinkedIn.personId, dossier);
+            bump();
+            setPendingLinkedIn(null);
+          }}
+        />
+      ) : null}
       {permission?.granted ? (
         <CameraView
           style={{ flex: 1 }}
           facing="back"
           barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
-          onBarcodeScanned={({ data }) => void saveRaw(data)}
+          onBarcodeScanned={held ? undefined : ({ data }) => void saveRaw(data)}
         />
       ) : null}
       {permission?.granted && !manual ? (
@@ -310,7 +391,7 @@ export default function ScanScreen() {
             {searching ? <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 36 }}><ActivityIndicator color={theme.tide} /><Text style={{ color: theme.text2 }}>Searching…</Text></View> : null}
             {!searching && handle.trim().length >= 2 && hits.length === 0 ? <Text style={{ color: theme.text3 }}>{platform === 'linkedin' ? 'No one in the LinkedIn directory matched that name.' : 'No public account matched that.'}</Text> : null}
             {hits.map((hit) => (
-              <Pressable key={`${hit.platform}:${hit.value}`} onPress={() => setPicked(hit)} style={{ flexDirection: 'row', gap: 10, alignItems: 'center', backgroundColor: picked?.value === hit.value && picked.platform === hit.platform ? theme.surface2 : 'transparent', borderRadius: 16, padding: 8, minHeight: 60 }}>
+              <Pressable key={`${hit.platform}:${hit.value}`} onPress={() => { if (hit.platform === 'linkedin') void saveRaw(hit.url, hit); else setPicked(hit); }} style={{ flexDirection: 'row', gap: 10, alignItems: 'center', backgroundColor: picked?.value === hit.value && picked.platform === hit.platform ? theme.surface2 : 'transparent', borderRadius: 16, padding: 8, minHeight: 60 }}>
                 <Avatar theme={theme} uri={hit.avatarUrl} name={hit.displayName || hit.value} size={44} />
                 <View style={{ flex: 1 }}>
                   <Text style={{ color: theme.text, fontWeight: '600' }} numberOfLines={1}>{hit.displayName || hit.value}</Text>

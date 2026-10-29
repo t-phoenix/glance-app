@@ -63,6 +63,8 @@ describe('usable flows', () => {
     const page = '<a href="https://github.com/someoneelse">footer</a>';
     expect(pickResolved('https://t.co/abc', 'https://x.com/priyabuilds', page)).toMatchObject({ kind: 'x', value: 'priyabuilds' });
     expect(pickResolved('https://lnkd.in/abc', 'https://lnkd.in/abc', '<a href="https://www.linkedin.com/in/priya-s-123">profile</a>')).toMatchObject({ kind: 'linkedin', value: 'priya-s-123' });
+    expect(pickResolved('https://lnkd.in/abc', 'https://www.linkedin.com/feed/', '<a href="https://www.linkedin.com/in/husting">Patrick</a><a href="https://www.linkedin.com/in/someone-else">Other</a>').kind).not.toBe('linkedin');
+    expect(pickResolved('https://lnkd.in/abc', 'https://www.linkedin.com/feed/', '<a href="https://www.linkedin.com/in/husting">Patrick</a><meta property="og:url" content="https://www.linkedin.com/in/someone-else">')).toMatchObject({ kind: 'linkedin', value: 'someone-else' });
     expect(pickResolved('https://t.co/abc', 'https://t.co/abc', '<meta http-equiv="refresh" content="0;url=https://x.com/priyabuilds">')).toMatchObject({ kind: 'x', value: 'priyabuilds' });
     expect(nextHop('<meta http-equiv="refresh" content="0;url=https://x.com/priyabuilds">', 'https://t.co/abc')).toBe('https://x.com/priyabuilds');
   });
@@ -130,6 +132,22 @@ describe('usable flows', () => {
       { value: 'priya-s-123', avatarUrl: 'https://media.licdn.com/dms/image/v2/ABC/profile-displayphoto-shrink_400_400/0/b' },
       { value: 'other-person', avatarUrl: 'https://media.licdn.com/dms/image/v2/ZZZ/profile-displayphoto-shrink_200_200/0/z' },
     ]);
+    expect(linkedinPeopleFromPayload({
+      included: [{
+        publicIdentifier: 'face-id',
+        firstName: 'Priya',
+        lastName: 'Shah',
+        headline: 'Engineer',
+        profilePicture: {
+          displayImageReference: {
+            vectorImage: {
+              rootUrl: 'https://media.licdn.com/dms/image/v2/D4D03AQHpriya/',
+              artifacts: [{ fileIdentifyingUrlPathSegment: '200_200/0/171?e=1&v=beta&t=abc' }],
+            },
+          },
+        },
+      }],
+    })[0]?.avatarUrl).toBe('https://media.licdn.com/dms/image/v2/D4D03AQHpriya/200_200/0/171?e=1&v=beta&t=abc');
     expect(linkedinPeopleFromPayload({
       included: [
         { publicIdentifier: 'priya-s-123', firstName: 'Priya', lastName: 'Sharma', headline: 'Engineer' },

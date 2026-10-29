@@ -85,7 +85,13 @@ export function pickResolved(raw: string, finalUrl: string, html: string): QrCla
     const hopAnchor = anchorFromQr(hopped);
     if (hopAnchor && ACCOUNT.has(hopAnchor.platform)) return { ...hopped, raw };
   }
+  const canonical = metaUrl(html)
+    .map((url) => classifyQr(url))
+    .find((qr) => anchorFromQr(qr)?.platform === 'linkedin');
+  if (canonical) return { ...canonical, raw };
   const links = socialsInPage(`${finalUrl}\n${html}`);
+  const linkedin = links.filter((link) => link.platform === 'linkedin');
+  if (linkedin.length > 1) return direct.kind === 'invalid' ? classifyQr(raw) : { ...direct, raw };
   const primary = links.find((link) => ['x', 'linkedin', 'telegram', 'whatsapp'].includes(link.platform)) ?? links[0];
   if (!primary) return direct.kind === 'invalid' ? classifyQr(raw) : { ...direct, raw };
   const resolved = classifyQr(primary.url);
@@ -104,8 +110,9 @@ async function readPage(start: string): Promise<{ url: string; html: string }> {
     try {
       const response = await fetch(current, {
         redirect: 'follow',
+        cache: 'no-store',
         signal: controller.signal,
-        headers: { Accept: 'text/html', 'User-Agent': BROWSER },
+        headers: { Accept: 'text/html', 'User-Agent': BROWSER, 'Cache-Control': 'no-cache' },
       });
       const html = (await response.text()).slice(0, 300_000);
       const landed = response.url || current;

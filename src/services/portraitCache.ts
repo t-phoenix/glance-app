@@ -38,6 +38,34 @@ async function keepImage(file: File, key: string): Promise<string | null> {
   }
 }
 
+/** Keep a portrait in Documents so a later list or person page can show it after the link expires. */
+export async function storePortrait(name: string, url: string): Promise<string | null> {
+  const safe = `${name.replace(/[^a-zA-Z0-9._-]+/g, '_').slice(0, 48) || 'face'}-${portraitKey(url)}`;
+  const dir = new Directory(Paths.document, 'portraits');
+  if (!dir.exists) dir.create({ intermediates: true, idempotent: true });
+  const file = new File(dir, `${safe}.img`);
+  try {
+    if (file.exists) {
+      const saved = await file.bytes();
+      if (saved.length >= 800 && looksLikeImage(saved)) return file.uri;
+      file.delete();
+    }
+    const headers = /licdn\.com/i.test(url)
+      ? { Referer: 'https://www.linkedin.com/', Accept: 'image/*', 'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1' }
+      : undefined;
+    const downloaded = await File.downloadFileAsync(url, file, { idempotent: true, headers });
+    const bytes = await downloaded.bytes();
+    if (bytes.length < 800 || !looksLikeImage(bytes)) {
+      if (downloaded.exists) downloaded.delete();
+      return null;
+    }
+    return downloaded.uri;
+  } catch {
+    if (file.exists) file.delete();
+    return null;
+  }
+}
+
 /** Download a portrait once and reuse the file the next time that account appears. */
 export function cachePortrait(raw: string | null | undefined): Promise<string | null> {
   const url = portraitUrl(raw);

@@ -1,3 +1,6 @@
+import { isLinkedInProfilePhoto } from '@/src/services/linkedinDirectory';
+import { xDossierFromRecord, type ProfileDossier } from '@/src/services/profileDossier';
+
 export interface PublicProfile {
   displayName: string | null;
   bio: string | null;
@@ -102,10 +105,11 @@ export async function fetchPublicProfile(platform: string, value: string, twitte
     if (status === 404) return null;
     const cleaned = cleanProfileTitle(meta(text, 'og:title') || documentTitle(text), 'linkedin');
     if (!cleaned.name) return null;
+    const image = meta(text, 'og:image');
     return {
       displayName: cleaned.name,
       bio: meta(text, 'og:description') || cleaned.bio,
-      avatarUrl: meta(text, 'og:image'),
+      avatarUrl: image && isLinkedInProfilePhoto(image) ? image : null,
       followers: null,
       raw: 'linkedin-og',
     };
@@ -138,6 +142,41 @@ export async function fetchPublicProfile(platform: string, value: string, twitte
     };
   }
   return null;
+}
+
+/** The fuller X profile: photo, bio, location, and links the public card leaves out. */
+export async function fetchXDossier(value: string, twitterKey?: string): Promise<ProfileDossier | null> {
+  const handle = value.replace(/^@/, '');
+  if (twitterKey) {
+    const { status, text } = await fetchText(`https://api.twitterapi.io/twitter/user/info?userName=${encodeURIComponent(handle)}`, { 'X-API-Key': twitterKey });
+    if (status === 401 || status === 403) throw new Error('auth');
+    if (status < 400) {
+      try {
+        const json = JSON.parse(text) as { data?: unknown };
+        const dossier = xDossierFromRecord(json.data ?? json, handle);
+        if (dossier.name || dossier.photo) return dossier;
+      } catch {
+        // A bad payload falls through to the public card.
+      }
+    }
+  }
+  try {
+    const card = await fetchText(`https://api.vxtwitter.com/${encodeURIComponent(handle)}`, { Accept: 'application/json' });
+    if (card.status < 400) {
+      const dossier = xDossierFromRecord(JSON.parse(card.text) as unknown, handle);
+      if (dossier.name || dossier.photo) return dossier;
+    }
+  } catch {
+    // The public page is the last try.
+  }
+  const page = await fetchText(`https://x.com/${encodeURIComponent(handle)}`, { 'User-Agent': 'Twitterbot/1.0' });
+  if (page.status >= 400) return null;
+  const dossier = xDossierFromRecord({
+    name: cleanProfileTitle(meta(page.text, 'og:title') || documentTitle(page.text), 'x').name,
+    description: meta(page.text, 'og:description'),
+    profilePicture: meta(page.text, 'og:image'),
+  }, handle);
+  return dossier.name || dossier.photo ? dossier : null;
 }
 
 export function handlesInText(text: string): { platform: string; value: string }[] {

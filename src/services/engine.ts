@@ -1,7 +1,8 @@
 import { heuristicNote, structureWithClaude } from '@/src/services/anthropic';
 import { discoverAccounts } from '@/src/services/discover';
-import { upgradeWebAnchor } from '@/src/services/primaryAccount';
-import { fetchPublicProfile, handlesInText } from '@/src/services/profiles';
+import { applyDossier, upgradeWebAnchor } from '@/src/services/primaryAccount';
+import { parseDossier } from '@/src/services/profileDossier';
+import { fetchPublicProfile, fetchXDossier, handlesInText } from '@/src/services/profiles';
 import type { Platform } from '@/src/parsers/handles';
 import { scoreCandidate } from '@/src/services/scorer';
 import { verifyOfflineName } from '@/src/services/verify';
@@ -94,6 +95,10 @@ async function runJob(repo: RecallRepository, kind: string, refId: string, keys:
       repo.updatePerson(refId, { display_name: profile.displayName, real_name: person.real_name || profile.displayName, summary: profile.bio ?? person.summary, photo_uri: profile.avatarUrl ?? person.photo_uri });
     }
     if (profile.bio) suggestFromText(repo, refId, profile.bio, true);
+    if (anchor.platform === 'x') {
+      const dossier = await fetchXDossier(anchor.value, keys.twitter).catch(() => null);
+      if (dossier) applyDossier(repo, refId, dossier);
+    }
     if (repo.person(refId)?.state === 'stub') repo.setState(refId, 'needs_review');
     return;
   }
@@ -101,7 +106,7 @@ async function runJob(repo: RecallRepository, kind: string, refId: string, keys:
     const handles = repo.handles(refId);
     const anchor = handles.find((handle) => (handle.status === 'anchor' || handle.status === 'confirmed') && handle.platform !== 'web' && handle.platform !== 'other');
     if (!anchor) return;
-    const found = await discoverAccounts(anchor.platform, anchor.value, keys.twitter);
+    const found = await discoverAccounts(anchor.platform, anchor.value, keys.twitter, undefined, parseDossier(anchor.raw_json));
     const person = repo.person(refId);
     if (found.anchorName && person && (!person.display_name || person.display_name === 'Unknown' || person.display_name.startsWith('@') || person.display_name.includes('.'))) {
       repo.updatePerson(refId, { display_name: found.anchorName, summary: found.anchorBio ?? person.summary });
