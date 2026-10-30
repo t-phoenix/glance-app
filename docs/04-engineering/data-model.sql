@@ -1,4 +1,4 @@
--- Recall SQLite schema v1 (expo-sqlite, WAL). Times are UTC ISO-8601; displayed in IST.
+-- Glance SQLite schema v1 (expo-sqlite, WAL). Times are UTC ISO-8601; displayed in IST.
 PRAGMA journal_mode = WAL;
 PRAGMA foreign_keys = ON;
 

@@ -1,4 +1,4 @@
-# Recall PRD v1.0
+# Glance PRD v1.0
 
 **Owner:** Abhinil · **Users:** one (you) · **Ship:** Oct 31, 2026 · **Used:** Nov 1–9, 2026 (IBW, Devcon, ETHGlobal, side events)
 
@@ -11,7 +11,7 @@ Meeting 50 to 150 people in a week in loud rooms, mostly through X and Telegram 
 | Goal | Measure | Target |
 |---|---|---|
 | Fast capture | Time from opening the app to a saved stub | ≤ 5 s (scan) · ≤ 20 s (scan + photo + note) |
-| Nobody lost | People met who are in Recall by end of day | ≥ 90% |
+| Nobody lost | People met who are in Glance by end of day | ≥ 90% |
 | Right identity | Confirmed links that turn out wrong | 0 (all confirmed by you) |
 | Follow-through | Action items done or dismissed within 14 days | ≥ 80% |
 | Cost | Average paid spend per kept person | ≤ $0.10 |

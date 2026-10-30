@@ -4,7 +4,7 @@
 |---|---|---|---|
 | Unit | Jest | every save (watch) + before each device install | must pass |
 | Integration | Jest + `msw` (fake providers) + in-memory SQLite (`better-sqlite3` in Node) | before each device install | must pass |
-| E2E | Maestro on the iOS Simulator; camera input injected with the `recall://debug/scan?payload=` deep link (dev builds only) | Oct 29 onward, nightly | P0 flows must pass |
+| E2E | Maestro on the iOS Simulator; camera input injected with the `glance://scan?payload=` deep link (dev builds only) | Oct 29 onward, nightly | P0 flows must pass |
 | Device | Manual checklist on the iPhone 13 | Oct 30–31 field test | all P0 ✅ |
 | Live providers | `scripts/health-check.ts` | daily + at the venue | logged |
 

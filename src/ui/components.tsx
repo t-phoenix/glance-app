@@ -181,9 +181,11 @@ function useCachedPortrait(uri?: string | null): string | null {
 /** ring: 'confirmed' draws Sea glass around someone with a linked account; 'pending' draws a quiet grey ring. */
 export function Avatar({ theme, uri, name, size = 48, ring, onLoad }: { theme: Theme; uri?: string | null; name: string; size?: number; ring?: 'confirmed' | 'pending'; onLoad?: () => void }) {
   const shown = useCachedPortrait(uri);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => { setFailed(false); }, [shown]);
   const headers = shown && /licdn\.com/i.test(shown) ? { Referer: 'https://www.linkedin.com/' } : undefined;
-  const face = shown ? (
-    <Image onLoad={onLoad} source={{ uri: shown, cache: 'force-cache', headers }} fadeDuration={0} style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: theme.surface2 }} />
+  const face = shown && !failed ? (
+    <Image onLoad={onLoad} onError={() => setFailed(true)} source={{ uri: shown, cache: 'force-cache', headers }} fadeDuration={0} style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: theme.surface2 }} />
   ) : (
     <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: theme[avatarTone(name || '?')], alignItems: 'center', justifyContent: 'center' }}>
       <Text style={{ color: theme.onColor, fontFamily: DISPLAY, fontSize: Math.round(size * 0.36) }}>{initials(name || '?')}</Text>

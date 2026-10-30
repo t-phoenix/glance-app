@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { openNodeDb } from '@/src/db/node';
-import { RecallRepository } from '@/src/db/repository';
+import { GlanceRepository } from '@/src/db/repository';
 import { classifyQr } from '@/src/parsers/qr';
 import { applyDossier } from '@/src/services/primaryAccount';
 import { handlesInText } from '@/src/services/profiles';
@@ -31,7 +31,7 @@ const linkedinPayload = {
       publicIdentifier: 'priya-shah',
       firstName: 'Priya',
       lastName: 'Shah',
-      headline: 'Engineer at Recall',
+      headline: 'Engineer at Harbor',
       summary: 'Builds proofs. https://x.com/priyabuilds',
       geoLocationName: 'Bengaluru, India',
       profilePicture: {
@@ -39,7 +39,7 @@ const linkedinPayload = {
         fileIdentifyingUrlPathSegment: '200_200/0/priya',
       },
     },
-    { title: 'Engineer', companyName: 'Recall', dateRange: { start: { year: 2022 } } },
+    { title: 'Engineer', companyName: 'Harbor', dateRange: { start: { year: 2022 } } },
     { schoolName: 'IIT Bombay', degreeName: 'BTech', dateRange: { start: { year: 2016 }, end: { year: 2020 } } },
     { phoneNumber: { number: '+919800011122' } },
   ],
@@ -50,10 +50,10 @@ describe('profile dossier', () => {
     const dossier = linkedinDossierFromPayload(linkedinPayload, 'priya-shah');
     expect(dossier.name).toBe('Priya Shah');
     expect(dossier.photo).toContain('profile-displayphoto');
-    expect(dossier.headline).toBe('Engineer at Recall');
-    expect(dossier.company).toBe('Recall');
+    expect(dossier.headline).toBe('Engineer at Harbor');
+    expect(dossier.company).toBe('Harbor');
     expect(dossier.location).toBe('Bengaluru, India');
-    expect(dossier.experience[0]).toMatchObject({ title: 'Engineer', company: 'Recall', dates: '2022 – now' });
+    expect(dossier.experience[0]).toMatchObject({ title: 'Engineer', company: 'Harbor', dates: '2022 – now' });
     expect(dossier.education[0]).toMatchObject({ school: 'IIT Bombay', degree: 'BTech', dates: '2016 – 2020' });
     expect(dossier.phone).toBe('+919800011122');
     expect(profileReady(dossier)).toBe(true);
@@ -101,10 +101,10 @@ describe('profile dossier', () => {
       value: 'priya-shah',
       name: 'Priya Shah',
       photo: PHOTO,
-      headline: 'Engineer at Recall',
+      headline: 'Engineer at Harbor',
       about: null,
       location: 'Bengaluru, India',
-      company: 'Recall',
+      company: 'Harbor',
       links: [],
       phone: null,
       experience: [],
@@ -113,11 +113,11 @@ describe('profile dossier', () => {
     const scored = scoreWithDossier({
       score: 40,
       evidence: 'Name match only.',
-      bio: 'Engineer at Recall in Bengaluru',
+      bio: 'Engineer at Harbor in Bengaluru',
       displayName: 'Priya Shah',
     }, dossier);
     expect(scored.score).toBeGreaterThanOrEqual(60);
-    expect(scored.evidence).toContain('Same company Recall');
+    expect(scored.evidence).toContain('Same company Harbor');
     expect(scored.evidence).toContain('Bengaluru');
     expect(scoreCandidate({
       linkedFromConfirmedBio: true,
@@ -280,7 +280,7 @@ describe('profile dossier', () => {
     const savedFace = preferDossier(card, { ...dossier!, photo: 'file:///portraits/husting.img', photoSource: 'profile' });
     expect(savedFace?.photo).toBe('file:///portraits/husting.img');
     expect(savedFace?.photoSource).toBe('profile');
-    const repo = new RecallRepository(openNodeDb());
+    const repo = new GlanceRepository(openNodeDb());
     const captured = repo.capture({ qr: classifyQr('https://www.linkedin.com/in/husting') });
     applyDossier(repo, captured.personId, savedFace!);
     const person = repo.person(captured.personId);
@@ -302,7 +302,7 @@ describe('profile dossier', () => {
   it('keeps the phone out of the scoring brief', () => {
     const dossier = linkedinDossierFromPayload(linkedinPayload, 'priya-shah');
     const brief = matchBrief({ platform: 'linkedin', value: 'priya-shah', name: 'Priya Shah', dossier });
-    expect(brief).toContain('Company: Recall');
+    expect(brief).toContain('Company: Harbor');
     expect(brief).toContain('Bengaluru');
     expect(brief).not.toContain('9800011122');
   });

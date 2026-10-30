@@ -7,6 +7,7 @@ import { anchorFromQr, classifyQr, type QrClassification } from '@/src/parsers/q
 import type { Platform } from '@/src/parsers/handles';
 import { keepPhoto, keepText } from '@/src/services/enrich';
 import { primaryProfilePhoto } from '@/src/services/primaryAccount';
+import { documentRelative, joinDocumentUri, listFileUris } from '@/src/services/portFiles';
 
 export interface ListContext {
   platform: string | null;
@@ -56,17 +57,29 @@ export interface HandleRow {
   confirmed_at: string | null;
 }
 
+export type ActionStatus = 'open' | 'waiting' | 'done';
+
 export interface ActionRow {
   id: string;
   person_id: string;
   encounter_id: string | null;
   text: string;
   owner: 'me' | 'them';
+  status: ActionStatus;
   due: string | null;
   channel: string | null;
   draft: string | null;
   done_at: string | null;
   dismissed_at: string | null;
+}
+
+export interface TaskDraft {
+  text: string;
+  owner: 'me' | 'them';
+  due: string | null;
+  channel: string | null;
+  draft: string | null;
+  keep: boolean;
 }
 
 export interface CaptureInput {
@@ -113,7 +126,7 @@ const JOB_PRIORITY: Record<string, number> = {
   reverse_avatar: 2,
 };
 
-export class RecallRepository {
+export class GlanceRepository {
   fts = false;
 
   constructor(private db: Db) {
@@ -143,6 +156,46 @@ export class RecallRepository {
   logError(code: string, detail: string): void {
     this.db.run('INSERT INTO error_log (code, detail, at) VALUES (?, ?, ?)', [code, detail.slice(0, 500), nowIso()]);
     this.db.run('DELETE FROM error_log WHERE id NOT IN (SELECT id FROM error_log ORDER BY id DESC LIMIT 500)');
+  }
+
+  /**
+   * A reinstall keeps the files and gives Documents a new address.
+   * Saved file:// links still name the old address, so the picture draws blank.
+   */
+  repairDocumentUris(documentsUri: string, exists: (relativePath: string) => boolean): number {
+    const rewrite = (text: string): string | null => {
+      let next = text;
+      let changed = false;
+      for (const uri of listFileUris(text)) {
+        const relative = documentRelative(uri);
+        if (!relative || !exists(relative)) continue;
+        const moved = joinDocumentUri(documentsUri, relative);
+        if (moved === uri) continue;
+        next = next.split(uri).join(moved);
+        changed = true;
+      }
+      return changed ? next : null;
+    };
+    const columns: [string, string][] = [
+      ['person', 'photo_uri'],
+      ['handle', 'avatar_uri'],
+      ['handle', 'raw_json'],
+      ['encounter', 'photo_uri'],
+      ['encounter', 'audio_uri'],
+      ['encounter', 'badge_photo_uri'],
+      ['encounter', 'photos_json'],
+    ];
+    let updated = 0;
+    for (const [table, column] of columns) {
+      const rows = this.db.all<{ id: string; value: string }>(`SELECT id, ${column} AS value FROM ${table} WHERE ${column} LIKE '%file:%'`);
+      for (const row of rows) {
+        const next = rewrite(row.value);
+        if (!next) continue;
+        this.db.run(`UPDATE ${table} SET ${column} = ? WHERE id = ?`, [next, row.id]);
+        updated += 1;
+      }
+    }
+    return updated;
   }
 
   seedEvents(rows: { id: string; name: string; kind: string; starts_at: string; ends_at: string; lat: number | null; lng: number | null; radius_m: number; source: string; source_url: string | null }[]): number {
@@ -461,15 +514,16 @@ export class RecallRepository {
 
   rejectHandle(handleId: string): void {
     const handle = this.db.get<HandleRow>('SELECT * FROM handle WHERE id = ?', [handleId]);
-    if (!handle) return;
+    if (!handle || handle.status === 'anchor') return;
     this.db.run(`UPDATE handle SET status = 'rejected' WHERE id = ?`, [handleId]);
     this.touch(handle.person_id);
+    this.reindex(handle.person_id);
   }
 
   saveDraft(encounterId: string, note: StructuredNote): void {
     const encounter = this.db.get<{ person_id: string }>('SELECT person_id FROM encounter WHERE id = ?', [encounterId]);
     if (!encounter) return;
-    this.db.run(`UPDATE encounter SET ai_json = ?, ai_version = 'recall-1' WHERE id = ?`, [JSON.stringify(note), encounterId]);
+    this.db.run(`UPDATE encounter SET ai_json = ?, ai_version = 'glance-1' WHERE id = ?`, [JSON.stringify(note), encounterId]);
     const person = this.person(encounter.person_id);
     if (!person || person.state === 'kept' || person.state === 'dropped') return;
     this.setState(encounter.person_id, 'needs_review');
@@ -499,7 +553,7 @@ export class RecallRepository {
   saveReview(encounterId: string, note: StructuredNote): void {
     const encounter = this.db.get<{ person_id: string }>('SELECT person_id FROM encounter WHERE id = ?', [encounterId]);
     if (!encounter) return;
-    this.db.run(`UPDATE encounter SET ai_json = ?, ai_version = 'recall-1', review_state = 'reviewed' WHERE id = ?`, [JSON.stringify(note), encounterId]);
+    this.db.run(`UPDATE encounter SET ai_json = ?, ai_version = 'glance-1', review_state = 'reviewed' WHERE id = ?`, [JSON.stringify(note), encounterId]);
     const person = this.person(encounter.person_id);
     if (!person) return;
     this.updatePerson(encounter.person_id, {
@@ -511,28 +565,62 @@ export class RecallRepository {
     this.db.run('DELETE FROM action WHERE encounter_id = ? AND done_at IS NULL', [encounterId]);
     for (const action of note.actions) {
       this.db.run(
-        `INSERT INTO action (id, person_id, encounter_id, text, owner, due, channel, draft) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-        [createId('act'), encounter.person_id, encounterId, action.text, action.owner, action.due, action.channel, note.draft_followup || null],
+        `INSERT INTO action (id, person_id, encounter_id, text, owner, status, due, channel, draft) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [createId('act'), encounter.person_id, encounterId, action.text, action.owner, action.owner === 'them' ? 'waiting' : 'open', action.due, action.channel, note.draft_followup || null],
       );
     }
     this.setState(encounter.person_id, 'kept');
   }
 
-  actions(bucket: 'overdue' | 'week' | 'waiting' | 'open', today = istDateKey()): ActionRow[] {
+  actions(bucket: ActionStatus | 'overdue', today = istDateKey()): ActionRow[] {
+    const status: ActionStatus = bucket === 'overdue' ? 'open' : bucket;
     const rows = this.db.all<ActionRow>(
-      `SELECT * FROM action WHERE done_at IS NULL AND dismissed_at IS NULL ORDER BY due IS NULL, due`,
+      `SELECT * FROM action WHERE dismissed_at IS NULL AND status = ? ORDER BY due IS NULL, due, done_at DESC`,
+      [status],
     );
-    const weekEnd = shiftDate(today, 7);
-    return rows.filter((row) => {
-      if (bucket === 'waiting') return row.owner === 'them';
-      if (bucket === 'overdue') return row.owner === 'me' && !!row.due && row.due < today;
-      if (bucket === 'week') return row.owner === 'me' && !!row.due && row.due >= today && row.due <= weekEnd;
-      return row.owner === 'me';
-    });
+    if (bucket === 'overdue') return rows.filter((row) => !!row.due && row.due < today);
+    if (bucket === 'done') return [...rows].sort((a, b) => (b.done_at ?? '').localeCompare(a.done_at ?? ''));
+    return rows;
+  }
+
+  addAction(input: { personId: string; text: string; owner: 'me' | 'them'; due?: string | null; channel?: string | null; draft?: string | null; encounterId?: string | null }): string {
+    const id = createId('act');
+    const status: ActionStatus = input.owner === 'them' ? 'waiting' : 'open';
+    this.db.run(
+      `INSERT INTO action (id, person_id, encounter_id, text, owner, status, due, channel, draft) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [id, input.personId, input.encounterId ?? null, input.text.trim(), input.owner, status, input.due || null, input.channel ?? null, input.draft ?? null],
+    );
+    return id;
+  }
+
+  /** Writes only the tasks left checked. */
+  saveTasks(personId: string, drafts: TaskDraft[]): number {
+    let saved = 0;
+    for (const draft of drafts) {
+      if (!draft.keep || !draft.text.trim()) continue;
+      this.addAction({ personId, text: draft.text, owner: draft.owner, due: draft.due, channel: draft.channel, draft: draft.draft });
+      saved += 1;
+    }
+    return saved;
+  }
+
+  updateAction(id: string, patch: { text?: string; due?: string | null; draft?: string | null }): void {
+    const current = this.db.get<ActionRow>('SELECT * FROM action WHERE id = ?', [id]);
+    if (!current) return;
+    this.db.run('UPDATE action SET text = ?, due = ?, draft = ? WHERE id = ?', [
+      patch.text === undefined ? current.text : patch.text.trim(),
+      patch.due === undefined ? current.due : patch.due || null,
+      patch.draft === undefined ? current.draft : patch.draft,
+      id,
+    ]);
+  }
+
+  setActionStatus(id: string, status: ActionStatus): void {
+    this.db.run('UPDATE action SET status = ?, done_at = ? WHERE id = ?', [status, status === 'done' ? nowIso() : null, id]);
   }
 
   completeAction(id: string): void {
-    this.db.run('UPDATE action SET done_at = ? WHERE id = ?', [nowIso(), id]);
+    this.setActionStatus(id, 'done');
   }
 
   dismissAction(id: string): void {
@@ -672,23 +760,38 @@ export class RecallRepository {
   restore(json: string): void {
     const dump = JSON.parse(json) as Record<string, Record<string, unknown>[]>;
     this.db.exec('PRAGMA foreign_keys = OFF;');
-    for (const table of ['action', 'encounter', 'handle', 'huddle', 'job', 'spend', 'watch', 'wallet_tx', 'person', 'event', 'setting']) {
-      this.db.run(`DELETE FROM ${table}`);
-    }
-    for (const [table, rows] of Object.entries(dump)) {
-      for (const row of rows) {
-        const keys = Object.keys(row);
-        const placeholders = keys.map(() => '?').join(', ');
-        this.db.run(
-          `INSERT INTO ${table} (${keys.join(', ')}) VALUES (${placeholders})`,
-          keys.map((key) => {
-            const value = row[key];
-            if (value == null) return null;
-            if (typeof value === 'number') return value;
-            return String(value);
-          }),
-        );
+    this.db.exec('BEGIN IMMEDIATE');
+    try {
+      for (const table of ['action', 'encounter', 'handle', 'huddle', 'job', 'spend', 'watch', 'wallet_tx', 'person', 'event', 'setting']) {
+        this.db.run(`DELETE FROM ${table}`);
       }
+      for (const [table, rows] of Object.entries(dump)) {
+        for (const raw of rows) {
+          const row = { ...raw };
+          if (table === 'action' && (row.status == null || row.status === '')) {
+            row.status = row.done_at ? 'done' : row.owner === 'them' ? 'waiting' : 'open';
+          }
+          const keys = Object.keys(row);
+          const placeholders = keys.map(() => '?').join(', ');
+          this.db.run(
+            `INSERT INTO ${table} (${keys.join(', ')}) VALUES (${placeholders})`,
+            keys.map((key) => {
+              const value = row[key];
+              if (value == null) return null;
+              if (typeof value === 'number') return value;
+              return String(value);
+            }),
+          );
+        }
+      }
+      this.db.exec('COMMIT');
+    } catch (error) {
+      try {
+        this.db.exec('ROLLBACK');
+      } catch {
+        // The transaction was already closed.
+      }
+      throw error;
     }
     this.db.exec('PRAGMA foreign_keys = ON;');
     for (const person of this.allPeople()) this.reindex(person.id);
@@ -792,6 +895,13 @@ export class RecallRepository {
     if (!cols.some((col) => col.name === 'photos_json')) this.db.exec('ALTER TABLE encounter ADD COLUMN photos_json TEXT');
     const handleCols = this.db.all<{ name: string }>('PRAGMA table_info(handle)');
     if (!handleCols.some((col) => col.name === 'raw_json')) this.db.exec('ALTER TABLE handle ADD COLUMN raw_json TEXT');
+    const actionCols = this.db.all<{ name: string }>('PRAGMA table_info(action)');
+    if (!actionCols.some((col) => col.name === 'status')) {
+      this.db.exec(`ALTER TABLE action ADD COLUMN status TEXT NOT NULL DEFAULT 'open'`);
+      this.db.exec(`UPDATE action SET status = 'done' WHERE done_at IS NOT NULL`);
+      this.db.exec(`UPDATE action SET status = 'waiting' WHERE done_at IS NULL AND owner = 'them'`);
+      this.db.exec(`UPDATE action SET status = 'open' WHERE done_at IS NULL AND owner = 'me'`);
+    }
   }
 
   encounterPhotos(id: string): string[] {
@@ -825,7 +935,7 @@ export class RecallRepository {
       this.db.run('DELETE FROM search_fts WHERE person_id = ?', [personId]);
       return;
     }
-    const handles = this.handles(personId).map((handle) => `${handle.platform}:${handle.value}`).join(' ');
+    const handles = this.handles(personId).filter((handle) => handle.status !== 'rejected' && handle.status !== 'gone').map((handle) => `${handle.platform}:${handle.value}`).join(' ');
     const transcripts = this.db.all<{ transcript: string | null; event_id: string | null }>('SELECT transcript, event_id FROM encounter WHERE person_id = ?', [personId]);
     const transcript = transcripts.map((row) => row.transcript ?? '').join('\n');
     const eventName = transcripts.map((row) => this.eventName(row.event_id) ?? '').join(' ');
@@ -860,9 +970,3 @@ function personLabel(input: CaptureInput, anchor: { platform: string; value: str
   return 'Unknown';
 }
 
-function shiftDate(dateKey: string, days: number): string {
-  const [year, month, day] = dateKey.split('-').map(Number);
-  const utc = new Date(Date.UTC(year!, (month ?? 1) - 1, day ?? 1));
-  utc.setUTCDate(utc.getUTCDate() + days);
-  return utc.toISOString().slice(0, 10);
-}

@@ -7,7 +7,7 @@ import type { Platform } from '@/src/parsers/handles';
 import { scoreCandidate } from '@/src/services/scorer';
 import { verifyOfflineName } from '@/src/services/verify';
 import { applyNetwork, onRetryableFailure, recoverStuck, type JobRow } from '@/src/services/queuePolicy';
-import type { RecallRepository } from '@/src/db/repository';
+import type { GlanceRepository } from '@/src/db/repository';
 import { nowIso } from '@/src/lib/time';
 
 export interface EngineKeys {
@@ -15,7 +15,7 @@ export interface EngineKeys {
   twitter?: string;
 }
 
-export async function tickJobs(repo: RecallRepository, online: boolean, keys: EngineKeys): Promise<void> {
+export async function tickJobs(repo: GlanceRepository, online: boolean, keys: EngineKeys): Promise<void> {
   const now = new Date();
   for (const row of repo.jobs()) {
     const job = applyNetwork(
@@ -65,7 +65,7 @@ export async function tickJobs(repo: RecallRepository, online: boolean, keys: En
   }
 }
 
-async function runJob(repo: RecallRepository, kind: string, refId: string, keys: EngineKeys): Promise<void> {
+async function runJob(repo: GlanceRepository, kind: string, refId: string, keys: EngineKeys): Promise<void> {
   if (kind === 'enrich_anchor' || kind === 'verify_offline') {
     const handles = repo.handles(refId);
     const anchor = handles.find((handle) => handle.status === 'anchor' || handle.status === 'pending_offline' || handle.status === 'conflict');
@@ -139,7 +139,7 @@ async function runJob(repo: RecallRepository, kind: string, refId: string, keys:
   if (kind === 'transcribe') return;
 }
 
-function suggestFromText(repo: RecallRepository, personId: string, text: string, fromBio: boolean): void {
+function suggestFromText(repo: GlanceRepository, personId: string, text: string, fromBio: boolean): void {
   const existing = new Set(repo.handles(personId).map((handle) => `${handle.platform}:${handle.value.toLowerCase()}`));
   for (const found of handlesInText(text)) {
     const key = `${found.platform}:${found.value.toLowerCase()}`;

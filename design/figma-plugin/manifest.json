@@ -1,6 +1,6 @@
 {
   "name": "Glance brand screens",
-  "id": "recall-brand-screens-local",
+  "id": "glance-brand-screens-local",
   "api": "1.0.0",
   "main": "code.js",
   "editorType": ["figma"],

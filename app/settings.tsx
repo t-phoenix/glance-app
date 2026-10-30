@@ -92,7 +92,7 @@ export default function SettingsScreen() {
                 database: repo.dump(),
                 media: [],
               }, backupKeyFromSecret(secret));
-              const path = `${FileSystem.documentDirectory}recall-backup.txt`;
+              const path = `${FileSystem.documentDirectory}glance-backup.txt`;
               await FileSystem.writeAsStringAsync(path, payload);
               if (await Sharing.isAvailableAsync()) await Sharing.shareAsync(path);
               else showToast('Backup written in the app documents folder.');

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { keepPhoto, keepText, portraitKey, portraitUrl } from '@/src/services/enrich';
 import { openNodeDb } from '@/src/db/node';
-import { RecallRepository } from '@/src/db/repository';
+import { GlanceRepository } from '@/src/db/repository';
 import { classifyQr } from '@/src/parsers/qr';
 
 const LINKEDIN = 'https://media.licdn.com/dms/image/v2/D4E/profile-displayphoto-shrink_800_800/0/1710000000000/priya?e=999&v=beta&t=token-a';
@@ -33,7 +33,7 @@ describe('enrichment keeps saved profile fields', () => {
   });
 
   it('does not wipe a saved person when a later write is blank', () => {
-    const repo = new RecallRepository(openNodeDb());
+    const repo = new GlanceRepository(openNodeDb());
     const saved = repo.capture({ qr: classifyQr('https://x.com/priyabuilds'), displayName: 'Priya' });
     const handle = repo.handles(saved.personId)[0]!;
     repo.updateHandle(handle.id, {
@@ -43,7 +43,7 @@ describe('enrichment keeps saved profile fields', () => {
       url: 'https://x.com/priyabuilds',
       score: 90,
     });
-    repo.updatePerson(saved.personId, { summary: 'Builds proofs', photo_uri: X, company: 'Recall' });
+    repo.updatePerson(saved.personId, { summary: 'Builds proofs', photo_uri: X, company: 'Harbor' });
     repo.upsertHandle({
       personId: saved.personId,
       platform: 'x',
@@ -67,11 +67,11 @@ describe('enrichment keeps saved profile fields', () => {
     expect(person.display_name).toBe('Priya');
     expect(person.summary).toBe('Builds proofs');
     expect(person.photo_uri).toBe(X);
-    expect(person.company).toBe('Recall');
+    expect(person.company).toBe('Harbor');
   });
 
   it('reads the same portrait for a list that the person page uses', () => {
-    const repo = new RecallRepository(openNodeDb());
+    const repo = new GlanceRepository(openNodeDb());
     const first = repo.capture({ qr: classifyQr('https://www.linkedin.com/in/priya-shah'), displayName: 'Priya', lat: 12.97, lng: 77.59, tag: 'ETHIndia' });
     const second = repo.capture({ qr: classifyQr('https://t.me/asha_zk'), displayName: 'Asha' });
     repo.updateHandle(repo.handles(first.personId)[0]!.id, { avatarUri: LINKEDIN, displayName: 'Priya Shah' });

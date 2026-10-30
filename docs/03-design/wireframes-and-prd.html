@@ -1,4 +1,4 @@
-<title>Recall App Blueprint</title>
+<title>Glance App Blueprint</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
@@ -92,8 +92,8 @@ figcaption b{display:block;font:600 13px var(--mono);color:var(--fg)}
 <div class="wrap">
 <header class="prose">
   <div class="eyebrow">PRD v0.2 · personal iOS app · IBW Nov 1–2 · Devcon Nov 3–6 · Mumbai</div>
-  <h1 style="margin-top:12px">Recall</h1>
-  <p class="lede">Scan someone's badge or social QR, and Recall builds one profile for that person, adds a photo and a voice note of what you talked about, tags the event automatically, and turns it all into follow-ups you can act on after IBW, Devcon and ETHGlobal.</p>
+  <h1 style="margin-top:12px">Glance</h1>
+  <p class="lede">Scan someone's badge or social QR, and Glance builds one profile for that person, adds a photo and a voice note of what you talked about, tags the event automatically, and turns it all into follow-ups you can act on after IBW, Devcon and ETHGlobal.</p>
   <nav class="toc" aria-label="Sections">
     <a href="#priorart">Existing apps</a><a href="#wireframes">Wireframes</a><a href="#problem">Problem</a><a href="#reqs">Requirements</a>
     <a href="#rush">Rush mode</a><a href="#eventapps">Event apps</a><a href="#unknownqr">Unknown QR</a>
@@ -230,7 +230,7 @@ figcaption b{display:block;font:600 13px var(--mono);color:var(--fg)}
   <div class="row"><div class="av"></div><div class="col"><b>@0xkaran · nudge for grant link</b><span class="note">waiting on them</span></div></div>
   <div class="tabs"><span>Today</span><span>People</span><span class="on">Follow-ups</span><span>Me</span></div>
 </div>
-<figcaption><b>08 · Follow-ups</b>Each action has a drafted message in the channel you share with that person. Recall opens the chat and you send it yourself.</figcaption>
+<figcaption><b>08 · Follow-ups</b>Each action has a drafted message in the channel you share with that person. Glance opens the chat and you send it yourself.</figcaption>
 </figure>
 
 <figure>
@@ -351,11 +351,11 @@ figcaption b{display:block;font:600 13px var(--mono);color:var(--fg)}
   <div class="sb"><span>9:41</span><span>‹ Add</span></div>
   <div class="hd">Import <small>from other apps</small></div>
   <div class="box"><div class="lbl">Screenshot</div><b>Share a screenshot of a profile</b><div class="note">From the IBW app, ETHGlobal, Devcon or Luma. AI reads the name, role, handles and photo.</div></div>
-  <div class="box"><div class="lbl">Share sheet</div><b>Share a profile link to Recall</b><div class="note">From X, LinkedIn or Telegram. It opens on the Identity screen.</div></div>
+  <div class="box"><div class="lbl">Share sheet</div><b>Share a profile link to Glance</b><div class="note">From X, LinkedIn or Telegram. It opens on the Identity screen.</div></div>
   <div class="box"><div class="lbl">Event list</div><b>Paste a Luma or side-event link</b><div class="note">Adds the event's time and place for auto-matching.</div></div>
   <div class="box"><div class="lbl">Speaker pages</div><b>Import a "want to meet" list</b><div class="note">Speakers from the IBW and Devcon sites. Scanning one of them flags it.</div></div>
 </div>
-<figcaption><b>16 · Import</b>For when someone connected with you inside an event app: a screenshot or shared link gets them into Recall without needing an API.</figcaption>
+<figcaption><b>16 · Import</b>For when someone connected with you inside an event app: a screenshot or shared link gets them into Glance without needing an API.</figcaption>
 </figure>
 
 </div>
@@ -386,7 +386,7 @@ figcaption b{display:block;font:600 13px var(--mono);color:var(--fg)}
 <ul>
   <li>Capture a person in <b>under 20 seconds</b>: scan, photo, voice note.</li>
   <li>Give each person <b>one identity</b> across X, LinkedIn, Telegram and WhatsApp, with suggestions for other platforms that you confirm yourself.</li>
-  <li><b>Recall context</b>: face, event, place, what was said and what happens next.</li>
+  <li><b>Glance context</b>: face, event, place, what was said and what happens next.</li>
   <li>Make <b>follow-ups</b> easy: each action has a drafted message and opens the right app.</li>
   <li>Run <b>locally</b> with no backend and pay per use, about $0.10 or less per person.</li>
 </ul>
@@ -431,7 +431,7 @@ figcaption b{display:block;font:600 13px var(--mono);color:var(--fg)}
 <ol>
   <li><b>Open (0–10s):</b> "Hey, what are you building?" Glance at the badge for name and company.</li>
   <li><b>Talk (2–8 min):</b> what they do, what they need, any overlap with you.</li>
-  <li><b>Exchange (10s):</b> "Are you on Telegram?" One of you shows a QR. <b>You scan theirs</b> rather than having them scan yours, because their scan of you doesn't give Recall anything.</li>
+  <li><b>Exchange (10s):</b> "Are you on Telegram?" One of you shows a QR. <b>You scan theirs</b> rather than having them scan yours, because their scan of you doesn't give Glance anything.</li>
   <li><b>Photo (5s, optional):</b> "Quick selfie so I remember?" People in crypto often say no, so the badge photo is the fallback.</li>
   <li><b>After you part (30–60s):</b> record the voice note while walking away. This is the step that gets skipped, so the app nags: a stub with no note gets a nudge 2 minutes later.</li>
 </ol>
@@ -443,7 +443,7 @@ figcaption b{display:block;font:600 13px var(--mono);color:var(--fg)}
   <li><b>One note for the group:</b> after the huddle, one voice note covers everyone ("Karan's the auditor, Marco does BD…"). Claude splits it per person by matching names, companies and handles to the stubs.</li>
   <li><b>Group photo:</b> one photo of the group. You tap faces to assign them to stubs later, at night, not in the moment.</li>
   <li><b>When there's no time to scan:</b> take one wide photo with the badges in view. Claude reads every badge it can see and creates a stub for each.</li>
-  <li><b>Hands-free start:</b> on an iPhone 13, set up Back Tap (Settings → Accessibility → Touch → Back Tap) to run a Shortcut that opens <code>recall://note</code>. Double-tap the back of the phone in your pocket and it starts recording.</li>
+  <li><b>Hands-free start:</b> on an iPhone 13, set up Back Tap (Settings → Accessibility → Touch → Back Tap) to run a Shortcut that opens <code>glance://note</code>. Double-tap the back of the phone in your pocket and it starts recording.</li>
 </ul>
 <h3>Letting the people who don't matter drop off</h3>
 <ul>
@@ -458,7 +458,7 @@ figcaption b{display:block;font:600 13px var(--mono);color:var(--fg)}
 <h2>Event apps &amp; directories</h2>
 <p>I checked on Oct 22. I couldn't find a public API or open attendee directory for any of the three events. You said IBW has a connect app, but I didn't find anything about it publicly, so it's probably only inside the ticketing app.</p>
 <div class="tbl"><table>
-<tr><th>Event</th><th>What I found</th><th>How Recall uses it</th></tr>
+<tr><th>Event</th><th>What I found</th><th>How Glance uses it</th></tr>
 <tr><td>IBW (Nov 1–2, Fairmont Mumbai)</td><td>No public info about an attendee app. The site lists speakers and 90+ side events.</td><td>Import speakers as a "want to meet" list. Import side events for auto-matching. Screenshot import for people you connect with in their app.</td></tr>
 <tr><td>Devcon (Nov 3–6, Mumbai)</td><td>No official directory found. Public ticket share pages exist at <code>devcon.org/ticket/&lt;name&gt;</code> and show only a name or ENS. A community-built tool, "Devcon Buddy", shares contact info only after both people accept.</td><td>If a badge QR contains a ticket link, take the name or ENS from it. If it's an ENS name, look up its records (free).</td></tr>
 <tr><td>ETHGlobal</td><td>No public API or directory found. Hacker profiles sit behind a login.</td><td>Scan their QR, or screenshot the profile. P2: log in inside the app to read your own ETHGlobal connections list.</td></tr>
@@ -468,7 +468,7 @@ figcaption b{display:block;font:600 13px var(--mono);color:var(--fg)}
 
 <section id="unknownqr" class="prose">
 <h2>Decoding an unknown QR</h2>
-<p>When a QR isn't a known social link, Recall works out what it contains step by step. It reads the content as text and never opens the link in a browser or wallet, because a QR at a crypto event is an easy way to phish someone.</p>
+<p>When a QR isn't a known social link, Glance works out what it contains step by step. It reads the content as text and never opens the link in a browser or wallet, because a QR at a crypto event is an easy way to phish someone.</p>
 <div class="flow"><span>Raw text</span><i>→</i><span>Recognise the format (local, free)</span><i>→</i><span>Decode it</span><i>→</i><span>If a URL: fetch the page as text</span><i>→</i><span>Claude: what is this, who is it?</span><i>→</i><span>Suggest next step</span></div>
 <div class="tbl"><table>
 <tr><th>Payload looks like</th><th>Decode locally</th><th>Then</th></tr>
@@ -495,7 +495,7 @@ figcaption b{display:block;font:600 13px var(--mono);color:var(--fg)}
 <tr><td>Event badge</td><td>vCard, a URL, or an opaque ticket ID</td><td>vCard gives name, email and company. An opaque ID gives nothing, so use the badge photo and vision. Check the real IBW and Devcon badge format on day 1.</td></tr>
 </table></div>
 <h3>Probable accounts for common names</h3>
-<p class="prose">For names like "Karan" or "Priya Sharma" there's rarely one exact hit. Recall fetches <b>up to 10 candidates per platform</b> and ranks them by evidence instead of picking one:</p>
+<p class="prose">For names like "Karan" or "Priya Sharma" there's rarely one exact hit. Glance fetches <b>up to 10 candidates per platform</b> and ranks them by evidence instead of picking one:</p>
 <div class="tbl"><table>
 <tr><th>Signal</th><th>How</th><th>Weight</th></tr>
 <tr><td>Linked from a confirmed profile</td><td>Bio, website or ENS record points to it</td><td>Strong</td></tr>
@@ -507,7 +507,7 @@ figcaption b{display:block;font:600 13px var(--mono);color:var(--fg)}
 <tr><td>Name only</td><td>No other evidence</td><td>Weak, shown collapsed</td></tr>
 </table></div>
 <h3>Every profile keeps each platform's version</h3>
-<p class="prose">People often use a real photo on LinkedIn, a cartoon on X and a different name on Telegram. Recall stores <b>each platform's photo, display name and bio separately</b>, labelled with where it came from, and shows them side by side (screen 13). The profile shows the photo you took first, then LinkedIn's, then the others.</p>
+<p class="prose">People often use a real photo on LinkedIn, a cartoon on X and a different name on Telegram. Glance stores <b>each platform's photo, display name and bio separately</b>, labelled with where it came from, and shows them side by side (screen 13). The profile shows the photo you took first, then LinkedIn's, then the others.</p>
 <h3>Confirmation rule</h3>
 <p class="prose"><b>Nothing is ever linked automatically.</b> Every handle except the one you scanned starts as <code>suggested</code> and only becomes <code>confirmed</code> when you tap it. Rejected candidates are remembered so they aren't suggested again.</p>
 </section>

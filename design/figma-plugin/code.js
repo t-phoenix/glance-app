@@ -1,9 +1,9 @@
-// Recall brand screens (Glance + flat pastel Tidepool): moves the file to the new brand, then builds the brand board and all 19 screens on the "Brand screens · v2" page.
-// Reuses the Recall color variables, text styles and components already in the file. Safe to re-run: it replaces its own output.
+// Glance brand screens (Glance + flat pastel Tidepool): moves the file to the new brand, then builds the brand board and all 19 screens on the "Brand screens · v2" page.
+// Reuses the Glance color variables, text styles and components already in the file. Safe to re-run: it replaces its own output.
 
 const B = { tide: '#8EE3D4', harbor: '#9CC3FF', glacier: '#A9DDF2', dusk: '#B7C0FF', sea: '#A6E9C1', amber: '#F5D98B', ink: '#0E1215', ink2: '#161B1F', ink3: '#1F262B', line: '#2C353B', paper: '#EEF3F2', mist: '#AEB8BE', fog: '#7E8A92', danger: '#F7A1A1' };
 const TK = { ink: 'bg', ink2: 'surface1', ink3: 'surface2', paper: 'text', mist: 'text2', fog: 'text3', line: 'border', danger: 'danger', tide: 'brand/tide', harbor: 'brand/harbor', glacier: 'brand/glacier', dusk: 'brand/dusk', sea: 'brand/sea', amber: 'brand/amber' };
-const OUT = ['Brand board', 'Entry and tabs', 'Capture', 'People', 'More', 'Recall · brand screens v2'];
+const OUT = ['Brand board', 'Entry and tabs', 'Capture', 'People', 'More', 'Glance · brand screens v2'];
 
 let VV = {}, ST = {}, IC = {}, SET = {}, MARK = null, MARK_INK = null, page;
 
@@ -234,7 +234,7 @@ const SCREENS = [
   });
   [[62, 300, 'tide', 12], [318, 372, 'sea', 10], [168, 232, 'dusk', 12], [290, 260, 'amber', 8], [110, 420, 'glacier', 9]].forEach(([x, y, c, d]) => { const o = R(s, d, d, c, { ellipse: true, at: [x, y], name: 'Person' }); o.effects = [shadow(B[c], 0.8, 0, 14)]; });
   const m = MARK.createInstance(); m.resize(130, 130); s.appendChild(m); m.x = cx - 65; m.y = cy - 65; m.effects = [shadow('#8EE3D4', 0.45, 0, 40)];
-  const wm = TX(s, 'recall.', 'Display', 'paper', { size: 68, align: 'CENTER' }); wm.x = (390 - wm.width) / 2; wm.y = 520;
+  const wm = TX(s, 'glance.', 'Display', 'paper', { size: 68, align: 'CENTER' }); wm.x = (390 - wm.width) / 2; wm.y = 520;
   const tl = TX(s, 'Every hello, remembered.', 'Body', 'mist', { align: 'CENTER' }); tl.x = (390 - tl.width) / 2; tl.y = 604;
   const fid = F(s, 'V', { name: 'Face ID', gap: 8, align: 'CENTER', at: [0, 740], w: 390 }); icon(fid, 'face', 30, 'fog', {}); TX(fid, 'Unlocking with Face ID', 'Footnote', 'fog');
   fid.counterAxisAlignItems = 'CENTER';
@@ -502,7 +502,7 @@ function brandBoard(x, y) {
   sec.appendChild(hero); hero.x = 40; hero.y = 40;
   [[460, 150, -14, 'sea', 0.35], [380, 130, 24, 'tide', 0.5]].forEach(([w, h, rot, c, op]) => { const e = R(hero, w, h, null, { ellipse: true, stroke: [c, 2, op], at: [600 - w / 2, 200 - h / 2] }); e.rotation = rot; });
   const m = MARK.createInstance(); m.resize(220, 220); hero.appendChild(m); m.x = 490; m.y = 80; m.effects = [shadow('#8EE3D4', 0.4, 0, 60)];
-  TX(hero, 'recall.', 'Display', 'paper', { size: 132, at: [40, 230] });
+  TX(hero, 'glance.', 'Display', 'paper', { size: 132, at: [40, 230] });
   TX(hero, 'Never forget a face.', 'Title 2', 'paper', { at: [46, 380] });
   TX(hero, 'BRAND KIT · V1 · OCT 2026', 'Caption', 'fog', { ls: 14, at: [46, 40] });
   // story
@@ -583,7 +583,7 @@ async function setup() {
 async function run() {
   await setup();
   for (const n of [...page.children]) if (OUT.includes(n.name)) n.remove();
-  const title = TX(page, 'Recall · brand screens v2', 'Large title', 'paper'); title.x = 0; title.y = 0; title.name = 'Recall · brand screens v2';
+  const title = TX(page, 'Glance · brand screens v2', 'Large title', 'paper'); title.x = 0; title.y = 0; title.name = 'Glance · brand screens v2';
   const errors = [];
   try { brandBoard(0, 80); } catch (e) { errors.push('Brand board: ' + e.message); }
   const comps = page.children.find(n => n.type === 'SECTION' && n.name === 'Components');
@@ -613,6 +613,6 @@ async function run() {
 
 run().then(errors => {
   if (errors.length) { console.error(errors); figma.notify(`Built with ${errors.length} problem(s): ${errors.join(' · ')}`, { error: true, timeout: 15000 }); }
-  else figma.notify('Recall brand board and 19 screens built.');
+  else figma.notify('Glance brand board and 19 screens built.');
   figma.closePlugin();
-}).catch(e => { console.error(e); figma.closePlugin('Recall plugin failed: ' + e.message); });
+}).catch(e => { console.error(e); figma.closePlugin('Glance plugin failed: ' + e.message); });

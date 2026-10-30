@@ -96,6 +96,7 @@ CREATE TABLE IF NOT EXISTS action (
   encounter_id TEXT REFERENCES encounter(id),
   text TEXT NOT NULL,
   owner TEXT NOT NULL CHECK (owner IN ('me','them')),
+  status TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open','waiting','done')),
   due TEXT,
   channel TEXT,
   draft TEXT,

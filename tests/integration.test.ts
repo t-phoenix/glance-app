@@ -3,7 +3,7 @@ import { err, ok } from '@/src/lib/result';
 import { ProviderRegistry, type ProviderCall } from '@/src/providers/registry';
 import { backupKeyFromSecret, decryptBackup, encryptBackup, type BackupPayload } from '@/src/services/backupCrypto';
 import { openNodeDb } from '@/src/db/node';
-import { RecallRepository } from '@/src/db/repository';
+import { GlanceRepository } from '@/src/db/repository';
 import { classifyQr } from '@/src/parsers/qr';
 
 describe('registry', () => {
@@ -56,7 +56,7 @@ describe('registry', () => {
 
 describe('repository', () => {
   it('I-06 offline scan stores a stub and a blocked-ready verify job', () => {
-    const repo = new RecallRepository(openNodeDb());
+    const repo = new GlanceRepository(openNodeDb());
     const saved = repo.capture({ qr: classifyQr('https://t.me/priya_zk'), offline: true, realName: 'Priya' });
     expect(saved.duplicate).toBe(false);
     expect(repo.person(saved.personId)?.state).toBe('stub');
@@ -65,7 +65,7 @@ describe('repository', () => {
   });
 
   it('I-09 rush keeps paid lookups for starred or mentioned people', () => {
-    const repo = new RecallRepository(openNodeDb());
+    const repo = new GlanceRepository(openNodeDb());
     const huddle = repo.startHuddle(null);
     const ids = ['priya', 'karan', 'asha', 'dev', 'omar'].map((name) => {
       const saved = repo.capture({ qr: classifyQr(`https://t.me/${name}_zk`), huddleId: huddle, displayName: name });
@@ -80,7 +80,7 @@ describe('repository', () => {
   });
 
   it('I-10 delete removes the person, handles and search row', () => {
-    const repo = new RecallRepository(openNodeDb());
+    const repo = new GlanceRepository(openNodeDb());
     const saved = repo.capture({ qr: classifyQr('https://x.com/priyabuilds'), displayName: 'Priya' });
     expect(repo.search('priya')).toHaveLength(1);
     repo.deletePerson(saved.personId);
@@ -90,7 +90,7 @@ describe('repository', () => {
   });
 
   it('I-11 backup round trip keeps row counts and omits wallet keys', () => {
-    const repo = new RecallRepository(openNodeDb());
+    const repo = new GlanceRepository(openNodeDb());
     repo.capture({ qr: classifyQr('https://t.me/priya_zk') });
     repo.setSetting('wallet_address', '0xabc');
     const payload: BackupPayload = {
@@ -104,21 +104,21 @@ describe('repository', () => {
     const key = backupKeyFromSecret('device-key');
     const encoded = encryptBackup(payload, key);
     const restored = decryptBackup(encoded, key);
-    const next = new RecallRepository(openNodeDb());
+    const next = new GlanceRepository(openNodeDb());
     next.restore(restored.database);
     expect(next.counts().person).toBe(repo.counts().person);
     expect(next.counts().handle).toBe(repo.counts().handle);
   });
 
   it('E-07 unsafe qr is not saved', () => {
-    const repo = new RecallRepository(openNodeDb());
+    const repo = new GlanceRepository(openNodeDb());
     const saved = repo.capture({ qr: classifyQr('ethereum:0xabc@8453/transfer') });
     expect(saved.unsafe).toBe(true);
     expect(repo.allPeople()).toHaveLength(0);
   });
 
   it('confirm refuses an account already linked elsewhere', () => {
-    const repo = new RecallRepository(openNodeDb());
+    const repo = new GlanceRepository(openNodeDb());
     const a = repo.capture({ qr: classifyQr('https://t.me/priya_zk'), displayName: 'Priya' });
     const b = repo.capture({ qr: null, displayName: 'Other' });
     const handleId = repo.insertHandle({ personId: b.personId, platform: 'telegram', value: 'priya_zk', status: 'suggested' });

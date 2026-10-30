@@ -1,4 +1,4 @@
-import type { RecallRepository } from '@/src/db/repository';
+import type { GlanceRepository } from '@/src/db/repository';
 import type { Platform } from '@/src/parsers/handles';
 import { anchorFromQr } from '@/src/parsers/qr';
 import { profileUrl } from '@/src/services/followupLinks';
@@ -36,7 +36,7 @@ export function primaryProfilePhoto(
 
 /** Save the resolved profile onto the person: name, bio, photo, and the real account link. */
 export async function fillPrimaryAccount(
-  repo: RecallRepository,
+  repo: GlanceRepository,
   personId: string,
   platform: Platform,
   value: string,
@@ -75,7 +75,7 @@ export async function fillPrimaryAccount(
 }
 
 /** Save the X or LinkedIn dossier on the anchor and copy the compact fields onto the person. */
-export function applyDossier(repo: RecallRepository, personId: string, next: ProfileDossier): void {
+export function applyDossier(repo: GlanceRepository, personId: string, next: ProfileDossier): void {
   const handle = repo.handles(personId).find((row) => row.platform === next.platform && row.value.toLowerCase() === next.value.toLowerCase());
   const dossier = preferDossier(parseDossier(handle?.raw_json), next);
   if (!dossier) return;
@@ -99,7 +99,7 @@ export function applyDossier(repo: RecallRepository, personId: string, next: Pro
 }
 
 /** A saved page link is not the account. Follow it once and replace the anchor. */
-export async function upgradeWebAnchor(repo: RecallRepository, personId: string, twitterKey?: string): Promise<boolean> {
+export async function upgradeWebAnchor(repo: GlanceRepository, personId: string, twitterKey?: string): Promise<boolean> {
   const anchor = repo.handles(personId).find((handle) => handle.status === 'anchor' || handle.status === 'pending_offline');
   if (!anchor || anchor.platform !== 'web') return false;
   const resolved = await resolveQr(anchor.url || anchor.value);

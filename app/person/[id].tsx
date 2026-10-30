@@ -4,7 +4,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import * as Linking from 'expo-linking';
 import { useApp } from '@/src/state/AppContext';
-import { Avatar, Button, Card, Chip, Field, Label, List, ListItem, MONO, PlatformMark, Screen, platformName } from '@/src/ui/components';
+import { Avatar, Button, Card, Chip, Field, Icon, Label, List, ListItem, MONO, PlatformMark, Screen, platformName } from '@/src/ui/components';
 import { VoiceNote } from '@/src/ui/VoiceNote';
 import { AiConfirm } from '@/src/ui/AiConfirm';
 import { EventTags } from '@/src/ui/EventTags';
@@ -15,10 +15,11 @@ import { getSecret, SECRET } from '@/src/services/secrets';
 import { applyDossier, primaryProfilePhoto, upgradeWebAnchor } from '@/src/services/primaryAccount';
 import { parseDossier, profileReady } from '@/src/services/profileDossier';
 import { LinkedInProfileFetch } from '@/src/ui/LinkedInProfileFetch';
-import { structureWithClaude } from '@/src/services/anthropic';
+import { heuristicNote, structureWithClaude } from '@/src/services/anthropic';
 import { transcribeRecording } from '@/src/services/transcribe';
-import { bulletsFromStructured, bulletsFromText, estimateVoiceCost } from '@/src/services/notes';
-import type { RecallRepository } from '@/src/db/repository';
+import { bulletsFromStructured, bulletsFromText, estimateFollowupCost, estimateVoiceCost, taskDrafts } from '@/src/services/notes';
+import { ActionChecklist } from '@/src/ui/ActionChecklist';
+import type { GlanceRepository, TaskDraft } from '@/src/db/repository';
 
 function MeetingNote({
   theme,
@@ -28,8 +29,8 @@ function MeetingNote({
   onAnalyse,
 }: {
   theme: ReturnType<typeof useApp>['theme'];
-  repo: RecallRepository;
-  encounter: ReturnType<RecallRepository['encounters']>[number];
+  repo: GlanceRepository;
+  encounter: ReturnType<GlanceRepository['encounters']>[number];
   bump: () => void;
   onAnalyse: (note: string) => void;
 }) {
@@ -73,6 +74,10 @@ export default function PersonScreen() {
   const suggestions = handles.filter((handle) => handle.status === 'suggested' || handle.status === 'conflict');
   const [ask, setAsk] = useState<{ encounterId: string; note: string } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [followAsk, setFollowAsk] = useState(false);
+  const [followBusy, setFollowBusy] = useState(false);
+  const [followCanRun, setFollowCanRun] = useState(false);
+  const [drafts, setDrafts] = useState<TaskDraft[] | null>(null);
   const [canRun, setCanRun] = useState(false);
   const [voiceClaude, setVoiceClaude] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -157,6 +162,46 @@ export default function PersonScreen() {
     }
   }
 
+  const noteText = encounters.map((encounter) => encounter.transcript?.trim()).filter(Boolean).join('\n\n');
+  const followEstimate = estimateFollowupCost(noteText);
+
+  async function beginFollowups() {
+    const anthropic = await getSecret(SECRET.anthropic);
+    setFollowCanRun(Boolean(anthropic));
+    setFollowAsk(true);
+  }
+
+  function showProposed(next: TaskDraft[]) {
+    setFollowBusy(false);
+    setFollowAsk(false);
+    if (!next.length) {
+      showToast('No promises in these notes.');
+      return;
+    }
+    setDrafts(next);
+  }
+
+  async function runFollowups() {
+    const anthropic = await getSecret(SECRET.anthropic);
+    if (!anthropic || !noteText) return;
+    setFollowBusy(true);
+    try {
+      const structured = await structureWithClaude(anthropic, noteText);
+      showProposed(structured ? taskDrafts(structured) : []);
+    } catch (error) {
+      setFollowBusy(false);
+      showToast(error instanceof Error ? error.message : 'The read did not finish.');
+    }
+  }
+
+  function saveFollowups() {
+    if (!repo || !drafts) return;
+    const saved = repo.saveTasks(id, drafts);
+    bump();
+    setDrafts(null);
+    showToast(saved ? `Saved ${saved}.` : 'Nothing saved.');
+  }
+
   const role = [person.role, person.company].filter(Boolean).join(' · ') || person.state;
   return (
     <Screen theme={theme}>
@@ -171,12 +216,33 @@ export default function PersonScreen() {
           </View>
           {person.recognise_hint ? <Text style={{ color: theme.text3, fontSize: 14 }}>{person.recognise_hint}</Text> : null}
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
-            {linked.map((handle) => (
-              <Pressable key={handle.id} accessibilityLabel={`Open ${platformName(handle.platform)}`} onPress={() => openProfile(handle.platform, handle.value, handle.url)} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: theme.surface1, borderRadius: 18, paddingLeft: 4, paddingRight: 12, minHeight: 40 }}>
-                <PlatformMark platform={handle.platform} size={30} />
-                <Text style={{ color: theme.text, fontSize: 13, fontFamily: MONO }} numberOfLines={1}>{handle.platform === 'whatsapp' ? handle.value : `@${handle.value}`}</Text>
-              </Pressable>
-            ))}
+            {linked.map((handle) => {
+              const primary = handle.id === (linked.find((item) => item.status === 'anchor') ?? linked[0])?.id;
+              const label = handle.platform === 'whatsapp' ? handle.value : `@${handle.value}`;
+              return (
+                <View key={handle.id} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.surface1, borderRadius: 18, minHeight: 40 }}>
+                  <Pressable accessibilityLabel={`Open ${platformName(handle.platform)}`} onPress={() => openProfile(handle.platform, handle.value, handle.url)} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingLeft: 4, paddingRight: primary ? 12 : 4, minHeight: 40 }}>
+                    <PlatformMark platform={handle.platform} size={30} />
+                    <Text style={{ color: theme.text, fontSize: 13, fontFamily: MONO }} numberOfLines={1}>{label}</Text>
+                  </Pressable>
+                  {primary ? null : (
+                    <Pressable
+                      accessibilityLabel={`Remove ${label}`}
+                      onPress={() => {
+                        Alert.alert(`Remove ${label}?`, undefined, [
+                          { text: 'Cancel', style: 'cancel' },
+                          { text: 'Remove', style: 'destructive', onPress: () => { repo.rejectHandle(handle.id); bump(); showToast('Account removed.'); } },
+                        ]);
+                      }}
+                      hitSlop={6}
+                      style={{ minWidth: 36, minHeight: 40, alignItems: 'center', justifyContent: 'center', paddingRight: 8 }}
+                    >
+                      <Icon name="xmark" color={theme.text3} size={14} />
+                    </Pressable>
+                  )}
+                </View>
+              );
+            })}
             <Chip theme={theme} label={suggestions.length ? `${suggestions.length} to review` : 'Find accounts'} onPress={() => router.push({ pathname: '/identity/[personId]', params: { personId: id } })} />
           </View>
           <View style={{ flexDirection: 'row', gap: 8 }}>
@@ -250,7 +316,10 @@ export default function PersonScreen() {
             <ListItem theme={theme} icon="person.2" tone="glacier" title="Possible accounts" subtitle={suggestions.length ? `${suggestions.length} to review` : 'Look up other platforms'} onPress={() => router.push({ pathname: '/identity/[personId]', params: { personId: id } })} last />
           </List>
           <View style={{ gap: 10 }}>
-            <Label theme={theme}>Notes</Label>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+              <Label theme={theme}>Notes</Label>
+              {noteText ? <Button theme={theme} kind="ai" size="small" icon="sparkles" label="Make follow-ups" onPress={() => void beginFollowups()} /> : null}
+            </View>
             {encounters.length === 0 ? <Text style={{ color: theme.text3 }}>No notes yet.</Text> : null}
             {encounters.map((encounter) => (
               <MeetingNote key={encounter.id} theme={theme} repo={repo} encounter={encounter} bump={bump} onAnalyse={(note) => void beginAnalyse(encounter.id, note)} />
@@ -290,6 +359,27 @@ export default function PersonScreen() {
         blocked="Add a Groq key in Settings. The recording stays on this phone, and Groq Whisper reads it."
         onCancel={() => setAsk(null)}
         onRun={() => void runAnalyse()}
+      />
+      <AiConfirm
+        theme={theme}
+        visible={followAsk}
+        title={followEstimate.title}
+        detail={followEstimate.detail}
+        estimate={followEstimate.estimate}
+        busy={followBusy}
+        canRun={followCanRun}
+        freeLabel="Find promises on this phone"
+        onCancel={() => setFollowAsk(false)}
+        onFree={() => showProposed(taskDrafts(heuristicNote(noteText)))}
+        onRun={() => void runFollowups()}
+      />
+      <ActionChecklist
+        theme={theme}
+        visible={drafts != null}
+        drafts={drafts ?? []}
+        onChange={setDrafts}
+        onClose={() => setDrafts(null)}
+        onSave={saveFollowups}
       />
     </Screen>
   );

@@ -1,5 +1,5 @@
 {
-  "$description": "Recall design tokens. 3 tiers: reference -> semantic (per theme) -> component. W3C design-tokens style. Dark is the default theme. No yellow, no teal. Accent is 'seablue' by default; swap every 'seablue' reference in semantic.*.action* for 'bougainvillea' if that direction is chosen.",
+  "$description": "Glance design tokens. 3 tiers: reference -> semantic (per theme) -> component. W3C design-tokens style. Dark is the default theme. No yellow, no teal. Accent is 'seablue' by default; swap every 'seablue' reference in semantic.*.action* for 'bougainvillea' if that direction is chosen.",
   "reference": {
     "color": {
       "ink": {

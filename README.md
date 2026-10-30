@@ -21,7 +21,7 @@ On the iPhone, with Developer Mode on and your Apple ID in Xcode:
 npx expo run:ios --device --configuration Release
 ```
 
-The free signing profile lasts 7 days. Reinstall over the same bundle id `xyz.abhinil.recall` so the database stays. Keys go in Settings. The wallet key stays in the Keychain and is not in the encrypted export.
+The free signing profile lasts 7 days. Reinstall over the same bundle id `xyz.abhinil.glance` so the database stays. Keys go in Settings. The wallet key stays in the Keychain and is not in the encrypted export.
 
 ## Docs
 

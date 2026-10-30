@@ -1,4 +1,4 @@
-<title>Recall Brand Board</title>
+<title>Glance Brand Board</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=JetBrains+Mono:wght@500;600&display=swap">
 <style>
@@ -149,10 +149,10 @@ body:not(.accent-pink) .only-pink, body.accent-pink .only-blue{display:none}
 </div>
 
 <header class="hero">
-  <svg class="logo-lg" role="img" aria-label="Recall mark"><use href="#mark"/></svg>
+  <svg class="logo-lg" role="img" aria-label="Glance mark"><use href="#mark"/></svg>
   <div>
     <div class="cap">Brand board v2 · dark-first · no yellow, no teal</div>
-    <h1>recall</h1>
+    <h1>glance</h1>
     <p>Remember everyone you met at crypto week. Designed for the venue at night: dim rooms, one free hand, five seconds of attention.</p>
   </div>
 </header>
@@ -282,11 +282,11 @@ body:not(.accent-pink) .only-pink, body.accent-pink .only-blue{display:none}
     document.body.classList.toggle('accent-pink', a==='pink');
     blue.setAttribute('aria-pressed', String(a!=='pink'));
     pink.setAttribute('aria-pressed', String(a==='pink'));
-    try{localStorage.setItem('recall-accent', a)}catch(e){}
+    try{localStorage.setItem('glance-accent', a)}catch(e){}
   }
   blue.addEventListener('click', function(){set('blue')});
   pink.addEventListener('click', function(){set('pink')});
-  var saved=null; try{saved=localStorage.getItem('recall-accent')}catch(e){}
+  var saved=null; try{saved=localStorage.getItem('glance-accent')}catch(e){}
   if(saved==='pink') set('pink');
 })();
 </script>

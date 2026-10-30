@@ -4,7 +4,7 @@ Public schedule for 30 Oct–8 Nov 2026. Kept in this folder so it stays out of 
 
 Pulled 21 Oct 2026 from the IBW Luma calendar, Devcon tickets and Pretalx v0.19, ETHGlobal’s submit page, IBW, and Fairmont. Personal Luma approvals are not here.
 
-Times in `events.json` are UTC (`starts_at`, `ends_at`), matching Recall’s `event` table. `starts_at_ist` is the local time. `kind` is `conference`, `hackathon`, `party`, or `side`.
+Times in `events.json` are UTC (`starts_at`, `ends_at`), matching Glance’s `event` table. `starts_at_ist` is the local time. `kind` is `conference`, `hackathon`, `party`, or `side`.
 
 | File | What |
 |---|---|

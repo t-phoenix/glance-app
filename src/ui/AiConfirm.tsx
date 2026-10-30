@@ -13,6 +13,7 @@ export function AiConfirm({
   onCancel,
   onRun,
   onFree,
+  freeLabel,
   runLabel,
   blocked,
 }: {
@@ -26,6 +27,7 @@ export function AiConfirm({
   onCancel: () => void;
   onRun: () => void;
   onFree?: () => void;
+  freeLabel?: string;
   runLabel?: string;
   blocked?: string;
 }) {
@@ -42,7 +44,7 @@ export function AiConfirm({
           <Text style={{ color: theme.text, fontFamily: MONO, fontSize: 14, flexShrink: 1, textAlign: 'right' }}>{estimate}</Text>
         </View>
         {!canRun ? <Text style={{ color: theme.warning, fontSize: 15, lineHeight: 21 }}>{blocked ?? 'Add an Anthropic key in Settings to run this. The free split stays on this phone.'}</Text> : null}
-        {onFree ? <Button theme={theme} kind="secondary" label="Split into bullets on this phone" disabled={busy} onPress={onFree} /> : null}
+        {onFree ? <Button theme={theme} kind="secondary" label={freeLabel ?? 'Split into bullets on this phone'} disabled={busy} onPress={onFree} /> : null}
         <View style={{ flexDirection: 'row', gap: 10 }}>
           <Button theme={theme} kind="secondary" label="Not now" disabled={busy} onPress={onCancel} style={{ flex: 1 }} />
           <Button theme={theme} kind="ai" icon="sparkles" label={busy ? 'Running…' : (runLabel ?? 'Run AI')} disabled={!canRun || busy} onPress={onRun} style={{ flex: 1.4 }} />

@@ -73,8 +73,8 @@ export function whatsAppExtractScript(query: string): string {
     }
     var loggedIn = !!(document.querySelector('#pane-side') || document.querySelector('[data-testid="chat-list"]') || document.querySelector('#side'));
     if (!loggedIn) { send({ query: ${JSON.stringify(query)}, login: true }); return true; }
-    ${phone ? `if (sessionStorage.getItem('recall-wa') !== ${JSON.stringify(phone)}) {
-      sessionStorage.setItem('recall-wa', ${JSON.stringify(phone)});
+    ${phone ? `if (sessionStorage.getItem('glance-wa') !== ${JSON.stringify(phone)}) {
+      sessionStorage.setItem('glance-wa', ${JSON.stringify(phone)});
       location.href = 'https://web.whatsapp.com/send?phone=${phone}';
       return true;
     }

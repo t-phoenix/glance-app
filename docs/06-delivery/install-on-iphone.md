@@ -15,7 +15,7 @@ With a free Apple ID the 7-day limit can't be avoided. Two facts make it managea
 1. When the profile expires, the app stops **launching**, but its **data stays on the phone**.
 2. Re-running the same install command over the existing app (same bundle ID, not deleted first) **keeps all the data**. The field test checks this.
 
-Free Personal Team limits: 3 sideloaded apps at once, and 10 App IDs per 7 days. Use one fixed bundle ID, `xyz.abhinil.recall`.
+Free Personal Team limits: 3 sideloaded apps at once, and 10 App IDs per 7 days. Use one fixed bundle ID, `xyz.abhinil.glance`.
 
 ## Re-sign schedule
 
@@ -24,13 +24,13 @@ Free Personal Team limits: 3 sideloaded apps at once, and 10 App IDs per 7 days.
 | Fri Oct 31, 21:00 | Fri Nov 7, ~21:00 | IBW (Nov 1–2) and Devcon (Nov 3–6) |
 | **Wed Nov 5 night**, at the hotel with the Mac | Wed Nov 12 | ETHGlobal and the follow-up week |
 
-Set an iPhone reminder for Nov 5, 22:00: "Re-sign Recall". Take the Mac and a USB-C to Lightning cable. Re-install over Wi-Fi also works if the phone was paired over the network in Xcode once.
+Set an iPhone reminder for Nov 5, 22:00: "Re-sign Glance". Take the Mac and a USB-C to Lightning cable. Re-install over Wi-Fi also works if the phone was paired over the network in Xcode once.
 
 ## One-time setup (Oct 24–25)
 
 1. iPhone: Settings › Privacy & Security › **Developer Mode** → On → restart.
 2. Xcode › Settings › Accounts → add your Apple ID → it creates a "Personal Team".
-3. `app.json`: `ios.bundleIdentifier = "xyz.abhinil.recall"`, plus the background audio mode and camera, microphone and location usage strings.
+3. `app.json`: `ios.bundleIdentifier = "xyz.abhinil.glance"`, scheme `glance`, database `glance.db`. Plus the background audio mode and camera, microphone and location usage strings.
 4. `npx expo prebuild -p ios` → open `ios/*.xcworkspace` once → Signing & Capabilities → Team = Personal Team.
 5. `npx expo run:ios --device --configuration Release`
 6. iPhone: Settings › General › VPN & Device Management → trust your developer profile.

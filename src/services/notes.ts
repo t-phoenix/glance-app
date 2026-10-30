@@ -1,4 +1,5 @@
 import type { StructuredNote } from '@/src/ai/structure';
+import type { TaskDraft } from '@/src/db/repository';
 
 export function bulletsFromText(text: string): string {
   const lines = text
@@ -42,6 +43,29 @@ export function estimateVoiceCost(hasClaude: boolean): { title: string; detail: 
     detail: hasClaude
       ? 'Groq Whisper transcribes the voice memo, then Claude Haiku rewrites that transcript as bullets: who they are, what you talked about, and what was promised. Text you already typed is not sent. The audio file stays on this phone. Groq and Anthropic bill their own keys. Glance does not add a fee.'
       : 'Groq Whisper transcribes the voice memo and Glance splits that transcript into bullets on this phone. Text you already typed is not sent. No Claude call is made. The audio file stays on this phone.',
+  };
+}
+
+export function taskDrafts(note: StructuredNote): TaskDraft[] {
+  const draft = note.draft_followup.trim() || null;
+  return note.actions
+    .filter((action) => action.text.trim())
+    .map((action) => ({
+      text: action.text.trim(),
+      owner: action.owner,
+      due: action.due,
+      channel: action.channel,
+      draft,
+      keep: true,
+    }));
+}
+
+export function estimateFollowupCost(text: string): { title: string; detail: string; estimate: string } {
+  const priced = estimateNoteCost(text);
+  return {
+    title: 'Make follow-ups',
+    estimate: priced.estimate,
+    detail: `Claude Haiku reads the notes already saved for this person (${text.length} characters) and proposes one task per promise. The recording is not sent. Nothing is saved until you keep or drop each task. Anthropic bills your own key. Glance does not add a fee.`,
   };
 }
 

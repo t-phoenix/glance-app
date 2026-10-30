@@ -251,11 +251,11 @@ export function linkedinExtractScript(query: string): string {
     }
     var csrf = (document.cookie.match(/JSESSIONID="?(ajax:[^";]+)"?/) || [])[1] || '';
     if (!csrf) return true;
-    if (window.__recallLiAbort) window.__recallLiAbort.abort();
+    if (window.__glanceLiAbort) window.__glanceLiAbort.abort();
     var controller = new AbortController();
-    window.__recallLiAbort = controller;
+    window.__glanceLiAbort = controller;
     var token = ${JSON.stringify(query)};
-    window.__recallLiQuery = token;
+    window.__glanceLiQuery = token;
     function page(start) {
       var variables = '(start:' + start + ',count:10,origin:GLOBAL_SEARCH_HEADER,query:(keywords:${keywords},flagshipSearchIntent:SEARCH_SRP,queryParameters:List((key:resultType,value:List(PEOPLE))),includeFiltersInResponse:false))';
       return fetch('/voyager/api/graphql?variables=' + variables + '&queryId=${QUERY_ID}', {
@@ -267,7 +267,7 @@ export function linkedinExtractScript(query: string): string {
         return response.json().then(function (data) { return { login: false, people: peopleFrom(data) }; }).catch(function () { return { login: false, people: [] }; });
       });
     }
-    function current() { return window.__recallLiQuery === token; }
+    function current() { return window.__glanceLiQuery === token; }
     function combine(lists) {
       var people = [];
       var seen = {};

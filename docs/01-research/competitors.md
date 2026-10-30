@@ -4,7 +4,7 @@ Researched Oct 23, 2026 with web search, Exa neural search (via x402) and the Gi
 
 ## Verdict
 
-No existing app does the whole job for a crypto event. The LinkedIn plus voice-note part is solved (Convu, ConnectMachine, RELOS). Nothing handles **X and Telegram identities, matching pseudonymous accounts with your confirmation, groups of people at once, or keeping data on the phone.** That's what makes Recall worth building.
+No existing app does the whole job for a crypto event. The LinkedIn plus voice-note part is solved (Convu, ConnectMachine, RELOS). Nothing handles **X and Telegram identities, matching pseudonymous accounts with your confirmation, groups of people at once, or keeping data on the phone.** That's what makes Glance worth building.
 
 ## Commercial apps
 
@@ -37,4 +37,4 @@ No existing app does the whole job for a crypto event. The LinkedIn plus voice-n
 1. **Notes only in your own voice** (RELOS, Convu): never record the other person.
 2. **An approval step for low-confidence fields** (converge): this becomes our Confirm rule.
 3. **A nudge after 2 days** (ConnectMachine): this becomes our follow-up reminder.
-4. **Apps where both people must install them fail** (Wavee, POP, Tapper): Recall works when only you have it.
+4. **Apps where both people must install them fail** (Wavee, POP, Tapper): Glance works when only you have it.

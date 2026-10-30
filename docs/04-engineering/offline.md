@@ -2,7 +2,7 @@
 
 ## Detecting it immediately
 
-Waiting for NetInfo alone is too slow and misses venue Wi-Fi that's connected but has no internet. Recall uses three signals; whichever fires first wins.
+Waiting for NetInfo alone is too slow and misses venue Wi-Fi that's connected but has no internet. Glance uses three signals; whichever fires first wins.
 
 | Signal | How | Speed |
 |---|---|---|

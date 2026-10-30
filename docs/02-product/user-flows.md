@@ -46,7 +46,7 @@ Profile → "Probable accounts" chips per platform → list sorted by evidence (
 
 ## F6. Follow-up
 
-Follow-ups tab → card with the draft → **Copy & open Telegram** → Recall copies the draft and opens `tg://resolve?domain=` → you paste and send → back in Recall a sheet asks "Sent?" with **Yes, mark done** or **Not yet**.
+Follow-ups tab → card with the draft → **Copy & open Telegram** → Glance copies the draft and opens `tg://resolve?domain=` → you paste and send → back in Glance a sheet asks "Sent?" with **Yes, mark done** or **Not yet**.
 
 ## F7. Nightly recap (23:00 IST)
 

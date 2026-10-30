@@ -1,8 +1,9 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
-import { openExpoDb } from '@/src/db/expo';
-import { RecallRepository } from '@/src/db/repository';
+import { File, Paths } from 'expo-file-system';
+import { openInstalledExpoDb } from '@/src/db/expo';
+import { GlanceRepository } from '@/src/db/repository';
 import { eventSeeds } from '@/src/data/seedEvents';
 import { tickJobs } from '@/src/services/engine';
 import { getSecret, SECRET, setSecret } from '@/src/services/secrets';
@@ -16,7 +17,7 @@ type Net = 'online' | 'offline' | 'captive' | 'degraded';
 export type UnlockResult = 'unlocked' | 'password' | 'retry';
 
 interface AppValue {
-  repo: RecallRepository | null;
+  repo: GlanceRepository | null;
   revision: number;
   bump: () => void;
   toast: string | null;
@@ -51,7 +52,7 @@ async function probe(): Promise<Net> {
 }
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
-  const [repo, setRepo] = useState<RecallRepository | null>(null);
+  const [repo, setRepo] = useState<GlanceRepository | null>(null);
   const [revision, setRevision] = useState(0);
   const [toast, setToast] = useState<string | null>(null);
   const [banner, setBanner] = useState<string | null>(null);
@@ -67,15 +68,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      const database = openExpoDb();
-      const next = new RecallRepository(database);
+      const opened = await openInstalledExpoDb();
+      const next = new GlanceRepository(opened.db);
       try {
-        const ported = await consumePortFile(next);
-        if (ported && !cancelled) setToast('Brought over your Expo Go data.');
+        const ported = await consumePortFile(next, opened.file);
+        if (ported && !cancelled) setToast('Brought over your people, notes, and wallet.');
       } catch {
-        next.logError('port', 'Could not read the Expo Go copy.');
+        next.logError('port', 'Could not read the copied data.');
       }
       if (cancelled) return;
+      try {
+        next.repairDocumentUris(Paths.document.uri, (relative) => new File(Paths.document, ...relative.split('/')).exists);
+      } catch {
+        next.logError('files', 'Could not retarget saved photos.');
+      }
       void sendDevPort(next).catch(() => undefined);
       next.seedEvents(eventSeeds());
       if (!next.setting('daily_cap')) next.setSetting('daily_cap', '2');

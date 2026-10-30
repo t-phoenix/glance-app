@@ -11,9 +11,9 @@ interface NodeDatabase {
   prepare(sql: string): NodeStatement;
 }
 
-export function openNodeDb(): Db {
+export function openNodeDb(path = ':memory:'): Db {
   const { DatabaseSync } = require('node:sqlite') as { DatabaseSync: new (path: string) => NodeDatabase };
-  const db = new DatabaseSync(':memory:');
+  const db = new DatabaseSync(path);
   return wrap(db);
 }
 

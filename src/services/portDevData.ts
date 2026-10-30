@@ -1,7 +1,8 @@
 import Constants from 'expo-constants';
 import * as FileSystem from 'expo-file-system/legacy';
-import type { RecallRepository } from '@/src/db/repository';
-import { getSecret, SECRET, setSecret } from '@/src/services/secrets';
+import type { GlanceRepository } from '@/src/db/repository';
+import { SECRET, secretFromPort, type SecretRole } from '@/src/identity';
+import { getSecret, setSecret } from '@/src/services/secrets';
 import { listFileUris, replaceFileUris } from '@/src/services/portFiles';
 
 const PORT_FILE = 'port-in.json';
@@ -19,7 +20,7 @@ function portPath(): string {
 }
 
 /** Read a one-time copy dropped into this app's documents, then delete it. */
-export async function consumePortFile(repo: RecallRepository): Promise<boolean> {
+export async function consumePortFile(repo: GlanceRepository, databaseFile: string): Promise<boolean> {
   const path = portPath();
   const info = await FileSystem.getInfoAsync(path);
   if (!info.exists) return false;
@@ -36,17 +37,22 @@ export async function consumePortFile(repo: RecallRepository): Promise<boolean> 
     pairs.push({ from: item.uri, to: dest });
   }
   repo.restore(replaceFileUris(bundle.database, pairs));
-  for (const key of Object.values(SECRET)) {
-    const value = bundle.secrets?.[key];
-    if (typeof value === 'string' && value) await setSecret(key, value);
+  const secrets: Record<string, boolean> = {};
+  for (const role of Object.keys(SECRET) as SecretRole[]) {
+    const value = secretFromPort(bundle.secrets, role);
+    if (value) await setSecret(SECRET[role], value);
+    secrets[role] = Boolean(await getSecret(SECRET[role]));
   }
   await FileSystem.deleteAsync(path, { idempotent: true });
-  await FileSystem.writeAsStringAsync(`${FileSystem.documentDirectory}${RESULT_FILE}`, JSON.stringify(repo.counts()));
+  await FileSystem.writeAsStringAsync(
+    `${FileSystem.documentDirectory}${RESULT_FILE}`,
+    JSON.stringify({ counts: repo.counts(), databaseFile, secrets }),
+  );
   return true;
 }
 
 /** Expo Go only. Sends this install's database, files, and keychain entries to the Mac. */
-export async function sendDevPort(repo: RecallRepository): Promise<boolean> {
+export async function sendDevPort(repo: GlanceRepository): Promise<boolean> {
   const token = process.env.EXPO_PUBLIC_PORT_TOKEN;
   const origin = process.env.EXPO_PUBLIC_PORT_ORIGIN;
   if (!token || !origin || Constants.executionEnvironment !== 'storeClient') return false;

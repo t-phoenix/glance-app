@@ -3,7 +3,7 @@
   "times_utc": true,
   "pulled": "2026-10-21",
   "source": "https://luma.com/ibw",
-  "note": "Public listings only. Personal Luma approvals are not in this file. kind matches Recall's event.kind where possible: conference, hackathon, party, side.",
+  "note": "Public listings only. Personal Luma approvals are not in this file. kind matches Glance's event.kind where possible: conference, hackathon, party, side.",
   "count": 80,
   "events": [
     {

@@ -16,12 +16,12 @@ Every `AppError.code` the app can show. The message is written for you, not for 
 | **A2** AI invalid output | Inline | "Summary needs a look." (transcript kept) | Review | yes (1×) |
 | **A3** AI unavailable | Inline | "AI is unreachable. Note saved; summary will run later." | — | yes |
 | **A4** badge unreadable | Sheet | "Couldn't read that badge." | Retake · Type name | manual |
-| **C1** camera denied | Screen | "Recall needs the camera to scan QR codes." | Open Settings | manual |
-| **C2** mic denied | Screen | "Recall needs the microphone for voice notes." | Open Settings | manual |
+| **C1** camera denied | Screen | "Glance needs the camera to scan QR codes." | Open Settings | manual |
+| **C2** mic denied | Screen | "Glance needs the microphone for voice notes." | Open Settings | manual |
 | **C3** location denied | Toast (once) | "No location. Events are matched by time only." | — | — |
 | **C4** storage low | Banner | "Phone storage is low (180 MB). Notes are being saved smaller." | Manage | — |
 | **C5** recording interrupted | Toast | "Recording saved (stopped by a call)." | — | — |
-| **Q1** unsafe QR | Sheet | "This QR is a payment/wallet link. Recall won't open it." | Save as text | — |
+| **Q1** unsafe QR | Sheet | "This QR is a payment/wallet link. Glance won't open it." | Save as text | — |
 | **Q2** duplicate scan | Haptic only | — | — | — |
 | **Q3** known person | Sheet | "You met Priya at IBW Day 1." | New encounter · Open | — |
 | **I1** already linked elsewhere | Inline | "This account is linked to Marco R." | Merge · Cancel | — |
